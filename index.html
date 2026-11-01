@@ -3159,6 +3159,8 @@ body.light header { background: rgba(255,255,255,0.92); border-bottom-color: rgb
     if (chatOpen) setTimeout(() => document.getElementById('chatInput').focus(), 50);
   }
 
+  const chatHistory = [];
+
   function appendChatMsg(text, who) {
     const msgs = document.getElementById('chatMessages');
     const div = document.createElement('div');
@@ -3185,26 +3187,25 @@ body.light header { background: rgba(255,255,255,0.92); border-bottom-color: rgb
       return;
     }
 
-    // Fallback to Claude API
+    // Fallback to Claude via our server (/api/chat keeps the API key secret)
+    chatHistory.push({ role: 'user', content: msg });
     appendChatMsg('Henter svar…', 'bot');
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 300,
-          system: 'Du er en norsk kundeservicebot for Reppobjekt — en markedsplass for reparasjonsobjekter. Svar kort (maks 2 setninger), på norsk, vennlig og hjelpsomt. Reppobjekt lar folk kjøpe/selge skadde biler, MC, båter og elektronikk billig. Kontakt: samikjan1991@gmail.com',
-          messages: [{ role: 'user', content: msg }]
-        })
+        body: JSON.stringify({ messages: chatHistory.slice(-10) })
       });
       const data = await res.json();
       const msgs = document.getElementById('chatMessages');
       const last = msgs.lastChild;
       if (last) last.remove(); // remove "Henter svar…"
-      const answer = data.content?.map(b=>b.text||'').join('') || 'Beklager, prøv igjen.';
+      if (!res.ok) throw new Error(data.error);
+      const answer = data.text || 'Beklager, prøv igjen.';
+      chatHistory.push({ role: 'assistant', content: answer });
       appendChatMsg(answer, 'bot');
     } catch {
+      chatHistory.pop();
       const msgs = document.getElementById('chatMessages');
       if (msgs.lastChild) msgs.lastChild.remove();
       appendChatMsg('Beklager, jeg kunne ikke hente svar akkurat nå. Kontakt oss på samikjan1991@gmail.com', 'bot');
@@ -3482,34 +3483,15 @@ body.light header { background: rgba(255,255,255,0.92); border-bottom-color: rgb
     const aar    = document.getElementById('aiAar').value.trim();
     const km     = document.getElementById('aiKm').value.trim();
 
-    const prompt = `Du er en norsk bilmekaniker og prisekspert. Estimer reparasjonskostnaden for følgende objekt:
-Merke: ${merke}
-Modell: ${modell || 'ukjent'}
-Årsmodell: ${aar || 'ukjent'}
-Kilometerstand: ${km || 'ukjent'}
-Feil/Problem: ${feil}
-
-Svar BARE med et JSON-objekt (ingen markdown, ingen forklaring utenfor JSON):
-{
-  "prisFra": 15000,
-  "prisTil": 25000,
-  "valuta": "NOK",
-  "sammendrag": "Kort forklaring på 2-3 setninger om hva reparasjonen innebærer og hvorfor kostnaden er slik.",
-  "tips": "Ett praktisk tips til kjøperen."
-}`;
-
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 500,
-          messages: [{ role: 'user', content: prompt }]
-        })
+        body: JSON.stringify({ merke, modell, aar, km, feil })
       });
+      if (!res.ok) throw new Error('API ' + res.status);
       const data = await res.json();
-      const text = data.content?.map(b => b.text||'').join('') || '';
+      const text = data.text || '';
       const clean = text.replace(/```json|```/g,'').trim();
       let parsed;
       try { parsed = JSON.parse(clean); }
