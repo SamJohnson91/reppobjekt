@@ -1,0 +1,6 @@
+# Old versions and unused files, kept locally only
+old/
+*.zip
+~$*
+.DS_Store
+Thumbs.db

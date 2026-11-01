@@ -1,0 +1,3672 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reppobjekt — Lav pris, egen innsats</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiMwODBhMGYiLz4KICA8cGF0aCBmaWxsPSIjZmY0YTFhIiBkPSJNNDcuNSAxNC41YTEzLjUgMTMuNSAwIDAgMC0xMyAxN2wtMTggMThhNC41IDQuNSAwIDEgMCA2LjQgNi40bDE4LTE4YTEzLjUgMTMuNSAwIDAgMCAxNy0xMyAxMy42IDEzLjYgMCAwIDAtLjgtNC42bC03IDctNC41LTEuNS0xLjUtNC41IDctN2ExMy42IDEzLjYgMCAwIDAtNC42LS44em0tMzAgMzFhMiAyIDAgMSAxIDAgNCAyIDIgMCAwIDEgMC00eiIvPgo8L3N2Zz4=">
+<meta name="theme-color" content="#ff4a1a">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #080a0f;
+  --surface:  #0f1218;
+  --surface2: #141820;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.12);
+  --accent:   #ff4a1a;
+  --accent2:  #ffb830;
+  --accent-glow: rgba(255,74,26,0.15);
+  --text:     #f0ece4;
+  --text2:    #9a9590;
+  --text3:    #5a5550;
+  --card:     #0d1017;
+  --green:    #22c55e;
+  --green-dim:#16a34a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 400;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Subtle grid texture */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Ambient glow top */
+body::after {
+  content: '';
+  position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+  width: 800px; height: 400px;
+  background: radial-gradient(ellipse, rgba(255,74,26,0.06) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ===== HEADER ===== */
+header {
+  position: relative; z-index: 50;
+  padding: 1.5rem 3rem;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  background: rgba(8,10,15,0.85);
+  position: sticky; top: 0;
+}
+
+.logo { display: flex; flex-direction: column; gap: 2px; }
+
+.logo-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1;
+}
+.logo-title .o-red { color: var(--accent); }
+.logo-title .bjekt { color: var(--accent); }
+
+.logo-sub {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.header-actions { display: flex; gap: 0.75rem; align-items: center; }
+
+.post-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  padding: 0.6rem 1.1rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+  box-shadow: 0 0 20px rgba(255,74,26,0.3);
+}
+.post-btn:hover {
+  background: #ff6030;
+  box-shadow: 0 0 30px rgba(255,74,26,0.5);
+  transform: translateY(-1px);
+}
+
+/* ===== TICKER ===== */
+.ticker-bar {
+  position: relative; z-index: 10;
+  background: linear-gradient(90deg, #1a0a04, #1f0e06, #1a0a04);
+  border-bottom: 1px solid rgba(255,74,26,0.2);
+  overflow: hidden; height: 2rem; display: flex; align-items: center;
+}
+.ticker-label {
+  background: var(--accent); color: white;
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 0 1rem; white-space: nowrap; height: 100%;
+  display: flex; align-items: center; flex-shrink: 0;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
+  padding-right: 1.4rem;
+}
+.ticker-scroll { display: flex; animation: ticker 36s linear infinite; white-space: nowrap; }
+.ticker-scroll span {
+  font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 500;
+  letter-spacing: 0.08em; color: rgba(255,200,150,0.7); padding: 0 2.5rem;
+}
+.ticker-scroll span::before { content: '◆ '; color: var(--accent); opacity: 0.5; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ===== CATEGORY TABS ===== */
+.type-tabs {
+  position: relative; z-index: 10;
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; scrollbar-width: none;
+  padding: 0 2rem;
+  gap: 0;
+}
+.type-tabs::-webkit-scrollbar { display: none; }
+
+.type-tab {
+  background: none; border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text3);
+  font-family: 'Outfit', sans-serif; font-weight: 500;
+  font-size: 0.95rem; letter-spacing: 0.03em;
+  padding: 0.9rem 1.3rem;
+  cursor: pointer; transition: all 0.2s;
+  margin-bottom: -1px; white-space: nowrap;
+  display: flex; align-items: center; gap: 0.4rem;
+  border-radius: 8px 8px 0 0;
+}
+.type-tab:hover {
+  color: white;
+  background: rgba(255,74,26,0.85);
+  border-bottom-color: var(--accent);
+}
+.type-tab.active {
+  color: white;
+  border-bottom-color: var(--accent);
+  background: rgba(255,74,26,0.9);
+}
+
+/* ===== MAIN ===== */
+main {
+  position: relative; z-index: 10;
+  padding: 2rem 3rem 4rem;
+  max-width: 1440px; margin: 0 auto;
+}
+
+/* ===== FILTER BAR ===== */
+.filter-bar {
+  display: flex; gap: 0.75rem; margin-bottom: 2rem;
+  align-items: center; flex-wrap: wrap;
+}
+
+.filter-label {
+  font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text3);
+}
+
+.price-select {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.8rem; font-weight: 500;
+  padding: 0.5rem 2rem 0.5rem 0.9rem;
+  cursor: pointer; outline: none;
+  border-radius: 6px;
+  transition: border-color 0.2s, color 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239a9590'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 0.7rem center;
+  background-attachment: scroll;
+}
+.price-select:focus { border-color: var(--accent); color: var(--text); }
+.price-select option { background: #111; }
+
+/* ===== SECTION HEADER ===== */
+.section-header {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 1.5rem;
+}
+.section-title {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 1.1rem; letter-spacing: 0.02em; color: var(--text2);
+  text-transform: uppercase;
+}
+.count {
+  font-size: 0.75rem; font-weight: 600; color: var(--text3);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 0.25rem 0.75rem; border-radius: 100px;
+}
+
+/* ===== GRID ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+/* ===== CARD ===== */
+.card {
+  cursor: pointer;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  animation: fadeUp 0.5s ease both;
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,74,26,0.03) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.25s;
+  pointer-events: none; z-index: 1; border-radius: 12px;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255,74,26,0.35);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,74,26,0.1);
+}
+.card:hover::before { opacity: 1; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-img-placeholder {
+  width: 100%; height: 160px;
+  background: linear-gradient(135deg, #0d1017, #131820);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.2rem; position: relative; overflow: hidden;
+}
+.card-img-placeholder::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--card));
+}
+
+.card-body { padding: 1.1rem 1.3rem 1.3rem; position: relative; z-index: 2; }
+
+.card-badges { display: flex; gap: 0.35rem; margin-bottom: 0.7rem; flex-wrap: wrap; }
+
+.badge {
+  font-size: 0.6rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0.2rem 0.55rem; border-radius: 4px;
+}
+.badge-urgent { background: rgba(255,74,26,0.15); color: #ff7a50; border: 1px solid rgba(255,74,26,0.3); }
+.badge-medium { background: rgba(255,184,48,0.12); color: #ffb830; border: 1px solid rgba(255,184,48,0.25); }
+.badge-minor  { background: rgba(34,197,94,0.1);  color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+.badge-type   { background: rgba(255,255,255,0.04); color: var(--text3); border: 1px solid var(--border); }
+.badge-mc     { background: rgba(127,159,255,0.1); color: #8fabff; border: 1px solid rgba(127,159,255,0.2); }
+.badge-tung   { background: rgba(212,146,74,0.1);  color: #e0a060; border: 1px solid rgba(212,146,74,0.2); }
+.badge-elek   { background: rgba(74,196,212,0.1);  color: #4ac4d4; border: 1px solid rgba(74,196,212,0.2); }
+.badge-sykkel { background: rgba(159,212,74,0.1);  color: #9fd44a; border: 1px solid rgba(159,212,74,0.2); }
+.badge-verkty { background: rgba(212,74,159,0.1);  color: #e060b0; border: 1px solid rgba(212,74,159,0.2); }
+
+.card-make {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 1.25rem; letter-spacing: -0.01em;
+  color: var(--text); line-height: 1.1; margin-bottom: 0.2rem;
+}
+.card-model { font-size: 0.78rem; color: var(--text3); margin-bottom: 0.6rem; font-weight: 400; }
+.card-problem {
+  font-size: 0.85rem; line-height: 1.6; color: var(--text2);
+  margin-bottom: 1rem; font-weight: 300;
+  display: -webkit-box; -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.card-footer {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center; gap: 0.5rem;
+  padding-top: 0.9rem; border-top: 1px solid var(--border);
+}
+
+.card-price-block {}
+.card-price {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 1.3rem; letter-spacing: -0.02em; color: var(--accent2);
+  line-height: 1;
+}
+.card-price-note {
+  font-size: 0.65rem; font-weight: 500;
+  color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+.card-actions { display: flex; gap: 0.4rem; }
+
+.prut-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: 'Outfit', sans-serif; font-weight: 600;
+  font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer; border-radius: 6px;
+  transition: all 0.2s; white-space: nowrap;
+  display: flex; align-items: center; gap: 0.3rem;
+}
+.prut-btn:hover {
+  background: rgba(255,184,48,0.1);
+  border-color: rgba(255,184,48,0.3);
+  color: var(--accent2);
+}
+
+.kjop-btn {
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.25);
+  color: #4ade80;
+  font-family: 'Outfit', sans-serif; font-weight: 600;
+  font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer; border-radius: 6px;
+  transition: all 0.2s; white-space: nowrap;
+  display: flex; align-items: center; gap: 0.3rem;
+}
+.kjop-btn:hover {
+  background: rgba(34,197,94,0.15);
+  border-color: rgba(34,197,94,0.4);
+  box-shadow: 0 0 12px rgba(34,197,94,0.1);
+}
+
+.card-location {
+  font-size: 0.72rem; color: var(--text3); white-space: nowrap;
+  display: flex; align-items: center; gap: 0.25rem;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  grid-column: 1/-1; text-align: center; padding: 5rem 2rem;
+  color: var(--text3); font-size: 0.85rem; letter-spacing: 0.08em;
+  text-transform: uppercase; display: none;
+}
+.empty-state::before { content: '—'; display: block; font-size: 2rem; margin-bottom: 1rem; opacity: 0.3; }
+
+/* ===== FOOTER ===== */
+footer {
+  position: relative; z-index: 10;
+  border-top: 1px solid var(--border);
+  padding: 2rem 3rem;
+  display: flex; justify-content: space-between; align-items: center;
+  color: var(--text3); font-size: 0.75rem; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.footer-brand { font-family: 'Syne', sans-serif; font-weight: 700; }
+.footer-brand span { color: var(--accent); }
+
+/* ===== MODALS ===== */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(4,6,10,0.88);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  justify-content: center; align-items: center; padding: 1.5rem;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  width: 100%; max-width: 640px; max-height: 90vh;
+  overflow-y: auto;
+  animation: modalIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+}
+.modal-sm { max-width: 460px; }
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92) translateY(16px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  padding: 1.5rem 1.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: flex-start;
+  position: sticky; top: 0;
+  background: var(--surface); z-index: 2;
+  border-radius: 16px 16px 0 0;
+}
+.modal-title {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 1.3rem; letter-spacing: -0.01em; color: var(--text);
+}
+.modal-subtitle { font-size: 0.78rem; color: var(--text3); margin-top: 0.3rem; font-weight: 400; }
+
+.modal-close {
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  color: var(--text3); font-size: 1rem; width: 2rem; height: 2rem;
+  cursor: pointer; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0; margin-left: 1rem;
+}
+.modal-close:hover { background: rgba(255,74,26,0.1); border-color: rgba(255,74,26,0.3); color: var(--text); }
+
+.modal-body { padding: 1.5rem 1.75rem 1.75rem; }
+
+/* Type selector (post modal) */
+.type-selector {
+  display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+}
+.type-sel-btn {
+  flex: 1; min-width: 80px; padding: 0.6rem 0.4rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-family: 'Outfit', sans-serif; font-size: 0.78rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+  border-radius: 8px;
+}
+.type-sel-btn:hover { border-color: var(--border2); color: var(--text2); }
+.type-sel-btn.active {
+  border-color: rgba(255,74,26,0.4); color: var(--text);
+  background: rgba(255,74,26,0.08);
+}
+
+/* Form */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; margin-bottom: 0.9rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.9rem; }
+.form-group label {
+  font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3);
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif; font-size: 0.88rem; font-weight: 400;
+  padding: 0.65rem 0.9rem; outline: none;
+  border-radius: 8px;
+  transition: border-color 0.2s, background 0.2s; width: 100%;
+}
+.form-group input::placeholder,
+.form-group textarea::placeholder { color: var(--text3); }
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: rgba(255,74,26,0.4);
+  background: rgba(255,74,26,0.03);
+}
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-group select option { background: #111; }
+
+.error-msg {
+  background: rgba(255,74,26,0.08);
+  border: 1px solid rgba(255,74,26,0.25);
+  color: #ff8060; padding: 0.65rem 1rem;
+  font-size: 0.8rem; border-radius: 8px;
+  margin-bottom: 1rem; display: none;
+}
+.error-msg.show { display: block; }
+
+.submit-btn {
+  width: 100%; background: var(--accent); color: white; border: none;
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.9rem; cursor: pointer; border-radius: 8px;
+  transition: all 0.2s; margin-top: 0.4rem;
+  box-shadow: 0 4px 20px rgba(255,74,26,0.3);
+}
+.submit-btn:hover { background: #ff6030; box-shadow: 0 4px 28px rgba(255,74,26,0.5); transform: translateY(-1px); }
+
+/* Contract modal */
+.contract-box {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem; margin-bottom: 1.2rem;
+  max-height: 300px; overflow-y: auto;
+  font-size: 0.8rem; line-height: 1.75; color: var(--text2);
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+.contract-box::-webkit-scrollbar { width: 4px; }
+.contract-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+.contract-box h3 {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text); margin: 1.1rem 0 0.35rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--border);
+}
+.contract-box h3:first-child { margin-top: 0; }
+.contract-box p { margin-bottom: 0.5rem; }
+.contract-box strong { color: var(--accent2); font-weight: 600; }
+.contract-box .law-ref { font-size: 0.7rem; color: var(--text3); font-style: italic; }
+
+.contract-checks { margin-bottom: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+.check-row {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer;
+  transition: all 0.2s;
+}
+.check-row:hover { border-color: var(--border2); }
+.check-row.checked {
+  border-color: rgba(34,197,94,0.3);
+  background: rgba(34,197,94,0.05);
+}
+.check-row input[type="checkbox"] {
+  width: 1rem; height: 1rem; flex-shrink: 0;
+  accent-color: var(--green); margin-top: 0.15rem; cursor: pointer;
+}
+.check-row label {
+  font-size: 0.8rem; line-height: 1.5; color: var(--text2);
+  cursor: pointer; text-transform: none; letter-spacing: 0;
+}
+.check-row label strong { color: var(--accent2); font-weight: 600; }
+
+.kjop-confirm-btn {
+  width: 100%; background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.25);
+  color: #4ade80;
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 0.88rem; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.9rem; cursor: pointer; border-radius: 8px;
+  transition: all 0.2s; margin-top: 0.4rem;
+  opacity: 0.35; pointer-events: none;
+}
+.kjop-confirm-btn.ready {
+  opacity: 1; pointer-events: auto;
+  box-shadow: 0 4px 20px rgba(34,197,94,0.15);
+}
+.kjop-confirm-btn.ready:hover {
+  background: rgba(34,197,94,0.15);
+  box-shadow: 0 4px 28px rgba(34,197,94,0.25);
+  transform: translateY(-1px);
+}
+
+/* Prut modal specifics */
+.prut-ad-info {
+  background: rgba(255,184,48,0.06);
+  border: 1px solid rgba(255,184,48,0.15);
+  border-radius: 10px;
+  padding: 1rem 1.1rem; margin-bottom: 1.2rem;
+}
+.prut-ad-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--text); }
+.prut-ad-price { color: var(--accent2); font-size: 0.82rem; margin-top: 0.2rem; font-weight: 500; }
+
+.prut-btn-submit {
+  width: 100%; background: rgba(255,184,48,0.08);
+  border: 1px solid rgba(255,184,48,0.3);
+  color: var(--accent2);
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 0.88rem; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.9rem; cursor: pointer; border-radius: 8px;
+  transition: all 0.2s; margin-top: 0.4rem;
+  box-shadow: 0 4px 16px rgba(255,184,48,0.1);
+}
+.prut-btn-submit:hover {
+  background: rgba(255,184,48,0.15);
+  box-shadow: 0 4px 24px rgba(255,184,48,0.2);
+  transform: translateY(-1px);
+}
+
+/* Confirmation modal */
+.confirm-icon {
+  width: 60px; height: 60px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; margin: 0 auto 1.2rem;
+}
+.confirm-icon.green { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); }
+.confirm-icon.gold  { background: rgba(255,184,48,0.1); border: 1px solid rgba(255,184,48,0.2); }
+
+.confirm-text {
+  font-size: 0.88rem; line-height: 1.75; color: var(--text2);
+  text-align: center; margin-bottom: 1.5rem;
+}
+
+/* ===== AUTH ===== */
+.auth-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: 'Outfit', sans-serif; font-weight: 500;
+  font-size: 0.8rem; letter-spacing: 0.04em;
+  padding: 0.6rem 1.1rem; cursor: pointer;
+  border-radius: 6px; transition: all 0.2s;
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.auth-btn:hover { border-color: var(--border2); background: rgba(255,255,255,0.08); color: var(--text); }
+
+.user-pill {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 100px; padding: 0.35rem 1rem 0.35rem 0.35rem;
+}
+.user-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; color: white;
+  flex-shrink: 0;
+}
+.user-name { font-size: 0.8rem; font-weight: 500; color: var(--text2); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.logout-btn {
+  background: none; border: none; color: var(--text3);
+  font-size: 0.72rem; cursor: pointer; padding: 0.2rem 0.4rem;
+  border-radius: 4px; transition: color 0.2s; margin-left: 0.2rem;
+}
+.logout-btn:hover { color: var(--accent); }
+
+.auth-divider {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin: 1.25rem 0; color: var(--text3); font-size: 0.75rem;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+.auth-switch {
+  text-align: center; font-size: 0.8rem; color: var(--text3); margin-top: 1rem;
+}
+.auth-switch a {
+  color: var(--accent2); cursor: pointer; text-decoration: none; font-weight: 500;
+}
+.auth-switch a:hover { text-decoration: underline; }
+
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 2.8rem; }
+.pw-toggle {
+  position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  font-size: 1rem; padding: 0.2rem; transition: color 0.2s;
+}
+.pw-toggle:hover { color: var(--text2); }
+
+.auth-success {
+  background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);
+  color: #4ade80; padding: 0.65rem 1rem; border-radius: 8px;
+  font-size: 0.8rem; margin-bottom: 1rem; display: none;
+}
+.auth-success.show { display: block; }
+
+.img-dots {
+  position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 4px; z-index: 2;
+}
+.img-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.35); cursor: pointer; transition: background 0.2s;
+}
+.img-dot.active { background: white; }
+
+/* Image upload */
+.img-upload-area {
+  border: 2px dashed var(--border2); border-radius: 10px;
+  padding: 1.2rem; cursor: pointer; transition: border-color 0.2s;
+  min-height: 80px;
+}
+.img-upload-area:hover { border-color: rgba(255,74,26,0.4); }
+.img-upload-placeholder {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.3rem; color: var(--text3); font-size: 0.82rem; text-align: center;
+}
+.img-preview-row {
+  display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.5rem;
+}
+.img-thumb-wrap {
+  position: relative; width: 72px; height: 72px; border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--border2);
+}
+.img-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.img-thumb-remove {
+  position: absolute; top: 2px; right: 2px;
+  background: rgba(0,0,0,0.7); border: none; color: white;
+  font-size: 0.65rem; width: 18px; height: 18px; border-radius: 50%;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+
+/* ===== SEARCH BAR ===== */
+.search-bar-wrap {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0.85rem 2rem;
+  position: sticky; top: 65px; z-index: 90;
+}
+.search-bar {
+  max-width: 680px; margin: 0 auto;
+  display: flex; align-items: center; gap: 0.6rem;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 0.55rem 1rem;
+  transition: border-color 0.2s;
+}
+.search-bar:focus-within { border-color: rgba(255,74,26,0.45); }
+.search-icon { font-size: 1rem; opacity: 0.5; }
+.search-bar input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.9rem;
+}
+.search-bar input::placeholder { color: var(--text3); }
+.search-clear {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  font-size: 0.85rem; padding: 2px 4px; border-radius: 4px;
+  transition: color 0.15s;
+}
+.search-clear:hover { color: var(--text); }
+
+/* ===== FAV BUTTON ===== */
+.fav-btn {
+  position: absolute; top: 0.7rem; right: 0.7rem; z-index: 10;
+  background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text2); font-size: 1.05rem; width: 32px; height: 32px;
+  border-radius: 50%; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; transition: all 0.2s; backdrop-filter: blur(4px);
+}
+.fav-btn:hover { color: #ff4a6a; border-color: rgba(255,74,106,0.4); transform: scale(1.1); }
+.fav-btn.active { color: #ff4a6a; border-color: rgba(255,74,106,0.5); background: rgba(255,74,106,0.15); }
+
+/* ===== HEADER ICONS (notif, messages, account) ===== */
+.header-icon-btn {
+  position: relative; background: none; border: 1px solid var(--border2);
+  color: var(--text2); width: 38px; height: 38px; border-radius: 10px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; transition: all 0.2s;
+}
+.header-icon-btn:hover { border-color: rgba(255,74,26,0.4); color: var(--text); }
+.notif-dot {
+  position: absolute; top: 5px; right: 5px; width: 8px; height: 8px;
+  background: var(--accent); border-radius: 50%; border: 2px solid var(--bg);
+}
+
+/* ===== DETAIL MODAL ===== */
+.detail-modal-inner { max-width: 720px; }
+.detail-img-area {
+  width: 100%; aspect-ratio: 16/9; background: var(--surface2);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 4rem; overflow: hidden; position: relative; margin-bottom: 1rem;
+}
+.detail-img-area img { width:100%; height:100%; object-fit:cover; }
+.detail-img-nav {
+  position:absolute; top:50%; transform:translateY(-50%);
+  background:rgba(0,0,0,0.55); border:none; color:white;
+  width:36px; height:36px; border-radius:50%; cursor:pointer;
+  font-size:1.1rem; display:flex; align-items:center; justify-content:center;
+  transition: background 0.2s;
+}
+.detail-img-nav:hover { background: rgba(0,0,0,0.8); }
+.detail-img-nav.prev { left: 10px; }
+.detail-img-nav.next { right: 10px; }
+.detail-img-counter {
+  position:absolute; bottom:10px; right:12px;
+  background:rgba(0,0,0,0.6); color:white; font-size:0.72rem;
+  padding:2px 7px; border-radius:20px;
+}
+.detail-thumb-row {
+  display:flex; gap:0.5rem; margin-bottom:1rem; overflow-x:auto; padding-bottom:2px;
+}
+.detail-thumb {
+  width:64px; height:48px; border-radius:6px; object-fit:cover;
+  cursor:pointer; border:2px solid transparent; flex-shrink:0; transition: border-color 0.15s;
+}
+.detail-thumb.active { border-color: var(--accent); }
+.detail-title { font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:700; margin-bottom:0.3rem; }
+.detail-sub { color:var(--text3); font-size:0.82rem; margin-bottom:1rem; }
+.detail-price-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; }
+.detail-price { font-size:1.6rem; font-weight:700; color:var(--accent2); font-family:'Syne',sans-serif; }
+.detail-fav-btn {
+  background: none; border: 1px solid var(--border2); color: var(--text2);
+  padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-size:0.9rem;
+  transition: all 0.2s; display:flex; align-items:center; gap:0.3rem;
+}
+.detail-fav-btn:hover { border-color: rgba(255,74,106,0.5); color:#ff4a6a; }
+.detail-fav-btn.active { color:#ff4a6a; border-color:rgba(255,74,106,0.5); background:rgba(255,74,106,0.08); }
+.detail-desc { color:var(--text2); line-height:1.65; margin-bottom:1.2rem; font-size:0.9rem; }
+.detail-info-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.6rem; margin-bottom: 1.2rem;
+}
+.detail-info-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.6rem 0.8rem;
+}
+.detail-info-label { font-size:0.68rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.2rem; }
+.detail-info-value { font-size:0.88rem; font-weight:500; }
+.detail-action-row { display:flex; gap:0.7rem; flex-wrap:wrap; }
+.detail-action-row .prut-btn, .detail-action-row .kjop-btn { flex:1; min-width:120px; justify-content:center; }
+
+/* ===== MIN SIDE MODAL ===== */
+.minside-tabs { display:flex; gap:0.5rem; margin-bottom:1.2rem; }
+.minside-tab {
+  padding:0.45rem 1rem; border-radius:8px; border:1px solid var(--border2);
+  background:none; color:var(--text2); cursor:pointer; font-family:'Outfit',sans-serif;
+  font-size:0.82rem; transition:all 0.2s;
+}
+.minside-tab.active { background:rgba(255,74,26,0.12); border-color:rgba(255,74,26,0.3); color:var(--accent); }
+.minside-content { min-height: 200px; }
+.minside-empty { color:var(--text3); text-align:center; padding:3rem 1rem; font-size:0.9rem; }
+.minside-card-list { display:flex; flex-direction:column; gap:0.8rem; }
+.minside-item {
+  display:flex; gap:0.8rem; align-items:center;
+  background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+  padding:0.8rem; cursor:pointer; transition:border-color 0.2s;
+}
+.minside-item:hover { border-color: var(--border2); }
+.minside-item-emoji { font-size:1.8rem; min-width:2.5rem; text-align:center; }
+.minside-item-info { flex:1; }
+.minside-item-name { font-weight:600; font-size:0.9rem; }
+.minside-item-sub { font-size:0.75rem; color:var(--text3); margin-top:0.15rem; }
+.minside-item-price { font-weight:700; color:var(--accent2); font-size:0.9rem; white-space:nowrap; }
+
+/* ===== AI PRISBEREGNER ===== */
+.ai-modal-inner { max-width: 600px; }
+.ai-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; margin-bottom:1rem; }
+.ai-result {
+  background: linear-gradient(135deg, rgba(255,74,26,0.05), rgba(255,184,48,0.05));
+  border: 1px solid rgba(255,184,48,0.2); border-radius: 12px;
+  padding: 1.2rem 1.4rem; margin-top: 1rem; display:none;
+}
+.ai-result.show { display:block; }
+.ai-result-price { font-size:2rem; font-weight:800; color:var(--accent2); font-family:'Syne',sans-serif; }
+.ai-result-label { font-size:0.75rem; color:var(--text3); margin-bottom:0.3rem; text-transform:uppercase; letter-spacing:.05em; }
+.ai-result-text { color:var(--text2); font-size:0.88rem; line-height:1.6; margin-top:0.8rem; }
+.ai-loading { text-align:center; padding:1.5rem; color:var(--text3); }
+.ai-loading::after { content:''; display:inline-block; width:20px; height:20px; border:2px solid var(--border2); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin-left:8px; vertical-align:middle; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ===== NOTIFICATIONS / MESSAGES PANEL ===== */
+.panel-overlay {
+  position:fixed; inset:0; z-index:200; display:none;
+}
+.panel-overlay.open { display:block; }
+.panel-backdrop { position:absolute; inset:0; }
+.panel-drawer {
+  position:absolute; top:65px; right:1rem;
+  background:var(--surface); border:1px solid var(--border2); border-radius:14px;
+  width:320px; max-height:480px; overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5); padding:1.2rem;
+  animation: fadeUp 0.2s ease;
+}
+.panel-title { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; margin-bottom:1rem; }
+.panel-item {
+  display:flex; gap:0.75rem; padding:0.75rem 0; border-bottom:1px solid var(--border);
+}
+.panel-item:last-child { border-bottom:none; }
+.panel-item-icon { font-size:1.3rem; min-width:2rem; text-align:center; padding-top:1px; }
+.panel-item-body { flex:1; }
+.panel-item-title { font-size:0.85rem; font-weight:500; margin-bottom:0.1rem; }
+.panel-item-sub { font-size:0.75rem; color:var(--text3); }
+.panel-item-time { font-size:0.7rem; color:var(--text3); margin-top:0.2rem; }
+.panel-empty { color:var(--text3); font-size:0.85rem; text-align:center; padding:2rem 0; }
+
+/* ===== RABATT BANNER ===== */
+.rabatt-banner {
+  background: linear-gradient(90deg, rgba(255,74,26,0.08), rgba(255,184,48,0.08));
+  border-top: 1px solid rgba(255,184,48,0.15);
+  border-bottom: 1px solid rgba(255,184,48,0.15);
+  padding: 0.65rem 2rem; display:flex; align-items:center; gap:1rem;
+  flex-wrap:wrap;
+}
+.rabatt-label {
+  background: var(--accent2); color:#000; font-size:0.7rem; font-weight:700;
+  padding:2px 7px; border-radius:4px; letter-spacing:.04em; white-space:nowrap;
+}
+.rabatt-text { font-size:0.82rem; color:var(--text2); flex:1; }
+.rabatt-link {
+  font-size:0.78rem; color:var(--accent2); text-decoration:none; white-space:nowrap;
+  border:1px solid rgba(255,184,48,0.3); padding:3px 10px; border-radius:6px;
+  transition:background 0.2s;
+}
+.rabatt-link:hover { background:rgba(255,184,48,0.1); }
+
+/* ===== FOOTER SOCIAL ===== */
+footer { flex-direction:column; gap:1rem; text-align:center; }
+.footer-social { display:flex; gap:0.75rem; justify-content:center; align-items:center; }
+.social-btn {
+  display:inline-flex; align-items:center; gap:0.4rem;
+  background:var(--surface2); border:1px solid var(--border2);
+  color:var(--text2); font-size:0.78rem; padding:0.4rem 0.9rem;
+  border-radius:8px; text-decoration:none; cursor:pointer;
+  transition:all 0.2s;
+}
+.social-btn:hover { border-color:var(--border2); color:var(--text); background:var(--surface); }
+.social-btn svg { width:14px; height:14px; fill:currentColor; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  header { padding: 1.2rem 1.5rem; }
+  .logo-title { font-size: 1.6rem; }
+  main { padding: 1.5rem 1.25rem 3rem; }
+  .form-row { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 0.5rem; text-align: center; padding: 1.5rem; }
+  .type-tab { padding: 0.7rem 0.9rem; font-size: 0.75rem; }
+  .type-tabs { padding: 0 1rem; }
+  .modal-body { padding: 1.25rem; }
+  .card-footer { grid-template-columns: 1fr; gap: 0.75rem; }
+  .card-actions { justify-content: flex-start; }
+}
+
+/* ===== DARK/LIGHT MODE ===== */
+body.light {
+  --bg: #f4f1ed; --surface: #ffffff; --surface2: #f0ece6;
+  --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+  --text: #1a1612; --text2: #5a5248; --text3: #9a9088;
+  --card: #ffffff; --accent-glow: rgba(255,74,26,0.08);
+}
+body.light body::before { background-image:
+  linear-gradient(rgba(0,0,0,0.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(0,0,0,0.03) 1px,transparent 1px); }
+body.light header { background: rgba(255,255,255,0.92); border-bottom-color: rgba(0,0,0,0.1); }
+
+/* ===== THEME TOGGLE ===== */
+.theme-toggle {
+  background:none; border:1px solid var(--border2); color:var(--text2);
+  width:36px; height:36px; border-radius:10px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-size:1rem;
+  transition:all 0.2s;
+}
+.theme-toggle:hover { border-color:rgba(255,74,26,0.4); color:var(--text); }
+
+/* ===== HERO ===== */
+.hero {
+  position:relative; z-index:10;
+  padding: 4rem 3rem 3rem;
+  background: linear-gradient(160deg, rgba(255,74,26,0.06) 0%, transparent 50%);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.hero::before {
+  content:'';
+  position:absolute; top:-60px; right:-60px;
+  width:350px; height:350px; border-radius:50%;
+  background: radial-gradient(circle, rgba(255,74,26,0.08) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero-inner { max-width:680px; }
+.hero-tag {
+  display:inline-flex; align-items:center; gap:0.5rem;
+  background:rgba(255,74,26,0.1); border:1px solid rgba(255,74,26,0.2);
+  color:var(--accent); font-size:1.35rem; font-weight:600; letter-spacing:.02em;
+  padding:0.5rem 1.1rem; border-radius:100px;
+  margin-bottom:1rem;
+}
+.hero-title {
+  font-family:'Syne',sans-serif; font-size:2.8rem; font-weight:800;
+  line-height:1.1; margin-bottom:0.75rem; letter-spacing:-0.02em;
+}
+.hero-title span { color:var(--accent); }
+.hero-sub {
+  font-size:1rem; color:var(--text2); line-height:1.6; margin-bottom:1.5rem;
+  max-width:520px;
+}
+.hero-actions { display:flex; gap:0.75rem; flex-wrap:wrap; }
+.hero-cta {
+  background:var(--accent); color:white; border:none;
+  padding:0.75rem 1.5rem; border-radius:10px; font-family:'Outfit',sans-serif;
+  font-size:0.9rem; font-weight:600; cursor:pointer;
+  transition:all 0.2s; box-shadow:0 4px 20px rgba(255,74,26,0.3);
+}
+.hero-cta:hover { background:#e83d0e; transform:translateY(-1px); box-shadow:0 6px 24px rgba(255,74,26,0.4); }
+.hero-cta-sec {
+  background:none; color:var(--text2); border:1px solid var(--border2);
+  padding:0.75rem 1.5rem; border-radius:10px; font-family:'Outfit',sans-serif;
+  font-size:0.9rem; cursor:pointer; transition:all 0.2s;
+}
+.hero-cta-sec:hover { border-color:var(--border2); color:var(--text); background:var(--surface2); }
+
+/* ===== STATS BAR ===== */
+.stats-bar {
+  display:flex; gap:0; border-top:1px solid var(--border);
+  background:var(--surface); position:relative; z-index:10;
+}
+.stat-item {
+  flex:1; padding:0.9rem 1.5rem; text-align:center;
+  border-right:1px solid var(--border);
+}
+.stat-item:last-child { border-right:none; }
+.stat-num {
+  font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800;
+  color:var(--accent2); display:block; line-height:1;
+}
+.stat-label { font-size:0.72rem; color:var(--text3); margin-top:0.2rem; text-transform:uppercase; letter-spacing:.05em; }
+
+/* ===== MOBILE HAMBURGER ===== */
+.hamburger {
+  display:none; background:none; border:1px solid var(--border2);
+  color:var(--text2); width:38px; height:38px; border-radius:10px;
+  cursor:pointer; flex-direction:column; align-items:center;
+  justify-content:center; gap:4px;
+}
+.hamburger span {
+  display:block; width:18px; height:2px;
+  background:currentColor; border-radius:2px; transition:all 0.3s;
+}
+.mobile-menu {
+  display:none; position:fixed; inset:0; z-index:300;
+  background:var(--bg); flex-direction:column; padding:1.5rem;
+  overflow-y:auto;
+}
+.mobile-menu.open { display:flex; }
+.mobile-menu-header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:2rem;
+}
+.mobile-menu-close {
+  background:none; border:none; color:var(--text); font-size:1.5rem; cursor:pointer;
+}
+.mobile-cat-btn {
+  display:flex; align-items:center; gap:0.75rem;
+  padding:1rem; border-radius:12px; background:var(--surface2);
+  border:1px solid var(--border); color:var(--text); font-size:0.95rem;
+  font-family:'Outfit',sans-serif; cursor:pointer; transition:all 0.2s;
+  margin-bottom:0.5rem; text-align:left;
+}
+.mobile-cat-btn:hover, .mobile-cat-btn.active {
+  background:rgba(255,74,26,0.1); border-color:rgba(255,74,26,0.3); color:var(--accent);
+}
+.mobile-cat-count {
+  margin-left:auto; background:var(--surface); border:1px solid var(--border);
+  color:var(--text3); font-size:0.7rem; padding:1px 7px; border-radius:100px;
+}
+
+/* ===== PRICE RANGE FILTER ===== */
+.price-filter {
+  display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;
+  padding:0.75rem 3rem; background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.price-filter-label { font-size:0.78rem; color:var(--text3); white-space:nowrap; }
+.price-range-inputs { display:flex; align-items:center; gap:0.5rem; }
+.price-range-input {
+  width:90px; background:var(--surface2); border:1px solid var(--border2);
+  border-radius:8px; padding:0.35rem 0.6rem; color:var(--text);
+  font-family:'Outfit',sans-serif; font-size:0.82rem; outline:none;
+}
+.price-range-input:focus { border-color:rgba(255,74,26,0.4); }
+.sev-filter { display:flex; gap:0.4rem; margin-left:auto; }
+.sev-btn {
+  padding:0.3rem 0.75rem; border-radius:100px; font-size:0.75rem; font-weight:600;
+  border:1px solid var(--border2); background:none; color:var(--text3);
+  cursor:pointer; transition:all 0.2s; font-family:'Outfit',sans-serif;
+}
+.sev-btn:hover { color:var(--text); border-color:var(--border2); }
+.sev-btn.active-akutt { background:rgba(255,74,26,0.15); color:#ff7a50; border-color:rgba(255,74,26,0.3); }
+.sev-btn.active-middels { background:rgba(255,184,48,0.12); color:#ffb830; border-color:rgba(255,184,48,0.25); }
+.sev-btn.active-mindre { background:rgba(34,197,94,0.1); color:#4ade80; border-color:rgba(34,197,94,0.2); }
+
+/* ===== TIME AGO BADGE ===== */
+.card-time { font-size:0.7rem; color:var(--text3); margin-top:0.3rem; }
+
+/* ===== SHARE BUTTON ===== */
+.share-btn {
+  background:none; border:1px solid var(--border); color:var(--text3);
+  padding:0.25rem 0.6rem; border-radius:6px; cursor:pointer;
+  font-size:0.72rem; transition:all 0.2s; display:inline-flex; align-items:center; gap:0.3rem;
+}
+.share-btn:hover { border-color:var(--border2); color:var(--text); }
+
+/* ===== IMPROVED CARD IMAGE ===== */
+.card-img-placeholder { height:200px !important; }
+
+/* ===== CATEGORY COUNTS ===== */
+.tab-count {
+  font-size:0.65rem; background:rgba(255,255,255,0.1); color:var(--text3);
+  padding:1px 5px; border-radius:100px; margin-left:2px;
+}
+.type-tab:hover .tab-count, .type-tab.active .tab-count {
+  background:rgba(255,255,255,0.2); color:rgba(255,255,255,0.8);
+}
+
+/* ===== LOCATION FILTER ===== */
+.location-select {
+  background:var(--surface2); border:1px solid var(--border2);
+  border-radius:8px; padding:0.35rem 0.6rem; color:var(--text);
+  font-family:'Outfit',sans-serif; font-size:0.82rem; outline:none; cursor:pointer;
+}
+
+/* ===== RESPONSIVE MOBILE ===== */
+@media (max-width: 768px) {
+  .hero { padding:2.5rem 1.5rem 2rem; }
+  .hero-title { font-size:1.9rem; }
+  .stats-bar { flex-wrap:wrap; }
+  .stat-item { flex:1 1 40%; border-bottom:1px solid var(--border); }
+  .hamburger { display:flex; }
+  .type-tabs { display:none; }
+  .price-filter { padding:0.75rem 1rem; }
+  .sev-filter { margin-left:0; width:100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="logo">
+    <div class="logo-title">Repp<span class="bjekt">objekt</span></div>
+    <div class="logo-sub">Lav pris, egen innsats</div>
+  </div>
+  <div class="header-actions">
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Bytt modus">🌙</button>
+      <button class="hamburger" onclick="openMobileMenu()" aria-label="Meny"><span></span><span></span><span></span></button>
+      <div id="authLoggedOut" style="display:flex;gap:0.5rem;align-items:center;">
+      <button class="post-btn" onclick="openAuthModal('login')" title="Logg inn for å legge ut">+ Legg ut annonse</button>
+      <button class="auth-btn" onclick="openAuthModal('login')">Logg inn</button>
+    </div>
+    <div id="authLoggedIn" style="display:none;gap:0.6rem;align-items:center;" class="header-actions">
+      <button class="header-icon-btn" onclick="openPanel('msgPanel')" title="Meldinger">✉️<span class="notif-dot"></span></button>
+      <button class="header-icon-btn" onclick="openPanel('notifPanel')" title="Varsler">🔔<span class="notif-dot"></span></button>
+      <div class="user-pill" onclick="openMinSide()" style="cursor:pointer;" title="Min side">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span class="user-name" id="userName">—</span>
+        <button class="logout-btn" onclick="event.stopPropagation();logout()" title="Logg ut">✕</button>
+      </div>
+      <button class="post-btn" onclick="openPostModal()">+ Legg ut annonse</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">Norges reparasjonsmarkedsplass</div>
+    <div class="hero-actions">
+      <button class="hero-cta" onclick="document.getElementById('carGrid').scrollIntoView({behavior:'smooth'})">Se alle annonser →</button>
+      <button class="hero-cta-sec" onclick="openAIPrisModal()">🤖 Priskalkulator</button>
+      <button class="hero-cta-sec" onclick="openReparasjonsmanualer()">📖 Reparasjonsmanualer</button>
+      <button class="hero-cta-sec" onclick="openBestillVerktoy()"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M21.7 2.3a1 1 0 0 0-1.4 0l-9 9-1.8-1-1.4 1.4 1 1.8-4.8 4.8a2 2 0 0 0 0 2.8l.6.6a2 2 0 0 0 2.8 0l4.8-4.8 1.8 1 1.4-1.4-1-1.8 9-9a1 1 0 0 0 0-1.4z"/></svg> Bestill verktøy</button>
+      <button class="hero-cta-sec" onclick="openRabattInfo()">🛒 Bestill deler</button>
+      <button class="hero-cta-sec" onclick="openBiltransport()">🚚 Bestill transport</button>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ===== TICKER ===== -->
+<div class="ticker-bar">
+  <div class="ticker-label">Nytt</div>
+  <div class="ticker-scroll" id="tickerScroll">
+    <span>BMW 3-serie — Motorhavari · Oslo</span>
+    <span>Kawasaki Z900 — Krasjet · Stavanger</span>
+    <span>MacBook Pro — Skadet skjerm · Bergen</span>
+    <span>Volvo V70 — Girkasse defekt · Trondheim</span>
+    <span>Komatsu PC50 — Hydraulikk · Hamar</span>
+    <span>Trek Marlin — Forgaffel knust · Oslo</span>
+    <span>Makita drill — Motor defekt · Drammen</span>
+    <span>BMW 3-serie — Motorhavari · Oslo</span>
+    <span>Kawasaki Z900 — Krasjet · Stavanger</span>
+    <span>MacBook Pro — Skadet skjerm · Bergen</span>
+    <span>Volvo V70 — Girkasse defekt · Trondheim</span>
+    <span>Komatsu PC50 — Hydraulikk · Hamar</span>
+    <span>Trek Marlin — Forgaffel knust · Oslo</span>
+    <span>Makita drill — Motor defekt · Drammen</span>
+  </div>
+</div>
+
+<!-- ===== RABATT BANNER ===== -->
+<div class="rabatt-banner">
+  <span class="rabatt-label">RABATT PÅ DELER</span>
+  <span class="rabatt-text">Spar opptil 40% på originaldeler og ettermarkedsdeler — eksklusive avtaler for RepoBjekt-brukere</span>
+  <a class="rabatt-link" href="#" onclick="openRabattInfo(); return false;">Se tilbud →</a>
+</div>
+
+<!-- ===== SEARCH BAR ===== -->
+<div class="search-bar-wrap">
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Søk etter merke, modell, feil, sted…" oninput="applyFilters()">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none">✕</button>
+  </div>
+</div>
+
+
+<!-- ===== PRICE & SEVERITY FILTER ===== -->
+<div class="price-filter">
+  <span class="price-filter-label">Pris:</span>
+  <div class="price-range-inputs">
+    <input class="price-range-input" type="number" id="priceMin" placeholder="Fra kr" oninput="applyFilters()">
+    <span style="color:var(--text3)">—</span>
+    <input class="price-range-input" type="number" id="priceMax" placeholder="Til kr" oninput="applyFilters()">
+  </div>
+  <span class="price-filter-label" style="margin-left:0.5rem;">Sted:</span>
+  <select class="location-select" id="locationFilter" onchange="applyFilters()">
+    <option value="">Alle steder</option>
+    <option>Oslo</option><option>Bergen</option><option>Trondheim</option>
+    <option>Stavanger</option><option>Drammen</option><option>Hamar</option>
+    <option>Tromsø</option><option>Lillehammer</option>
+  </select>
+</div>
+
+<!-- ===== CATEGORY TABS ===== -->
+<div class="type-tabs">
+  <button class="type-tab active" onclick="switchTab('alle', this)">Alle<span class='tab-count'>15</span></button>
+  <button class="type-tab" onclick="switchTab('bil', this)">🚗 Biler<span class='tab-count'>3</span></button>
+  <button class="type-tab" onclick="switchTab('veteran', this)">🏎️ Veteranbil</button>
+  <button class="type-tab" onclick="switchTab('bobil', this)">🚐 Bobil</button>
+  <button class="type-tab" onclick="switchTab('bat', this)">⛵ Båt</button>
+  <button class="type-tab" onclick="switchTab('mc', this)">🏍️ Motorsykkel<span class='tab-count'>2</span></button>
+  <button class="type-tab" onclick="switchTab('moped', this)">🛵 Moped & Scooter</button>
+  <button class="type-tab" onclick="switchTab('mopedbil', this)">🚗 Mopedbil</button>
+  <button class="type-tab" onclick="switchTab('atv', this)">🛻 ATV</button>
+  <button class="type-tab" onclick="switchTab('snoscooter', this)">❄️ Snøscooter</button>
+  <button class="type-tab" onclick="switchTab('tung', this)">🚛 Tyngre kjøretøy<span class='tab-count'>2</span></button>
+  <button class="type-tab" onclick="switchTab('elektronikk', this)">💻 Elektronikk<span class='tab-count'>2</span></button>
+  <button class="type-tab" onclick="switchTab('sykkel', this)">🚲 Sykkel<span class='tab-count'>2</span></button>
+  <button class="type-tab" onclick="switchTab('verktoy', this)">🔧 Verktøy<span class='tab-count'>3</span></button>
+</div>
+
+<!-- ===== MAIN ===== -->
+<main>
+  <div class="section-header">
+    <div>
+      <div class="section-title">Aktive annonser</div>
+      <div class="count" id="countDisplay" style="margin-top:0.4rem; display:inline-block;">15 objekter</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+      <span class="filter-label">Sorter:</span>
+      <select class="price-select" id="priceSort" onchange="applyFilters()">
+        <option value="">Pris: standard</option>
+        <option value="lav">Pris: lav → høy</option>
+        <option value="hoy">Pris: høy → lav</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid" id="carGrid">
+
+    <!-- BILER -->
+    <div class="card" data-tags="akutt motor" data-type="bil" data-price="18500">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/bmw_5serie.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-urgent">Akutt</span><span class="badge badge-type">Motor</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">BMW 5-serie</div>
+        <div class="card-model">E60 · 2005 · 183 000 km</div>
+        <div class="card-time">🕐 2 dager siden</div>
+        <div class="card-problem">Motorhavari — N54-motor har spist et stempel. Komplett og rullende. Trenger full motorrenovering.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">18 500 kr</div><div class="card-price-note">Selges som den er</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'BMW 5-serie E60', 18500)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('BMW 5-serie E60', 18500)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Oslo</div>
+          <button class="share-btn" onclick="shareAd(event,\'BMW 5-serie')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-tags="middels karosseri" data-type="bil" data-price="6000">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/vw_golf_mk5.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-medium">Middels</span><span class="badge badge-type">Karosseri</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Volkswagen Golf</div>
+        <div class="card-model">Mk5 · 2007 · 213 000 km</div>
+        <div class="card-time">🕐 5 dager siden</div>
+        <div class="card-problem">Gjennomgående rustskade i tersklene og under motoren. Ellers kjørbar. Kan brukes som delsbil.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">6 000 kr</div><div class="card-price-note">Ikke forhandlingsbar</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Volkswagen Golf Mk5', 6000)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Volkswagen Golf Mk5', 6000)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Bergen</div>
+          <button class="share-btn" onclick="shareAd(event,\'Volkswagen Golf')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-tags="middels motor" data-type="bil" data-price="9500">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/volvo_v70.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-medium">Middels</span><span class="badge badge-type">Motor</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Volvo V70</div>
+        <div class="card-model">Mk2 · 2004 · 298 000 km</div>
+        <div class="card-time">🕐 1 dag siden</div>
+        <div class="card-problem">Høyt oljeforbruk, ca. 1 liter per 1000 km. Mistanke om slitte topp-tetninger. Kjørbar.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">9 500 kr</div><div class="card-price-note">Kan se på bytte</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Volvo V70 Mk2', 9500)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Volvo V70 Mk2', 9500)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Drammen</div>
+          <button class="share-btn" onclick="shareAd(event,\'Volvo V70')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MC -->
+    <div class="card" data-tags="akutt karosseri" data-type="mc" data-price="24000">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/kawasaki_z900.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-urgent">Akutt</span><span class="badge badge-mc">MC</span><span class="badge badge-type">Karosseri</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Kawasaki Z900</div>
+        <div class="card-model">2019 · 22 000 km</div>
+        <div class="card-time">🕐 3 dager siden</div>
+        <div class="card-problem">Krasjet i lav hastighet. Gaffel bøyd, front og tank skadet. Motor og elektronikk OK.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">24 000 kr</div><div class="card-price-note">Papirer i orden</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Kawasaki Z900 2019', 24000)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Kawasaki Z900 2019', 24000)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Stavanger</div>
+          <button class="share-btn" onclick="shareAd(event,\'Kawasaki Z900')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-tags="middels motor" data-type="mc" data-price="8000">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/honda_cb750.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-medium">Middels</span><span class="badge badge-mc">MC</span><span class="badge badge-type">Motor</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Honda CB750</div>
+        <div class="card-model">Nighthawk · 1993 · 67 000 km</div>
+        <div class="card-time">🕐 1 uke siden</div>
+        <div class="card-problem">Motor seize etter tørrkjøring. Sylinderhodet må maskineres. Komplett og original klassiker.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">8 000 kr</div><div class="card-price-note">Selges med deler</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Honda CB750 Nighthawk', 8000)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Honda CB750 Nighthawk', 8000)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Oslo</div>
+          <button class="share-btn" onclick="shareAd(event,\'Honda CB750')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TYNGRE KJØRETØY -->
+    <div class="card" data-tags="akutt motor" data-type="tung" data-price="85000">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/volvo_fh16.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-urgent">Akutt</span><span class="badge badge-tung">Tyngre</span><span class="badge badge-type">Motor</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Volvo FH16</div>
+        <div class="card-model">Lastebil · 2008 · 890 000 km</div>
+        <div class="card-time">🕐 4 dager siden</div>
+        <div class="card-problem">Motorhavari på D16G-aggregat. Kabinettet i fin stand, chassis OK. Selges for deler eller full renovering.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">85 000 kr</div><div class="card-price-note">Inkl. henger</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Volvo FH16 lastebil', 85000)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Volvo FH16 lastebil', 85000)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Hamar</div>
+          <button class="share-btn" onclick="shareAd(event,\'Volvo FH16')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-tags="middels karosseri" data-type="tung" data-price="32000">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/komatsu_pc50.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-medium">Middels</span><span class="badge badge-tung">Tyngre</span><span class="badge badge-type">Hydraulikk</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Komatsu PC50</div>
+        <div class="card-model">Gravemaskin · 2001</div>
+        <div class="card-time">🕐 6 dager siden</div>
+        <div class="card-problem">Hydraulikklekkasje i boom-sylinderen. Motoren går bra. Bøtte og kjettinger slitt men funksjonell.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">32 000 kr</div><div class="card-price-note">Selges der den står</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Komatsu PC50 gravemaskin', 32000)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Komatsu PC50 gravemaskin', 32000)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Lillehammer</div>
+          <button class="share-btn" onclick="shareAd(event,\'Komatsu PC50')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ELEKTRONIKK -->
+    <div class="card" data-tags="middels karosseri" data-type="elektronikk" data-price="4500">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/macbook_pro.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-medium">Middels</span><span class="badge badge-elek">Elektronikk</span><span class="badge badge-type">Skjerm</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">MacBook Pro</div>
+        <div class="card-model">15" · 2019 · Intel i9</div>
+        <div class="card-time">🕐 3 dager siden</div>
+        <div class="card-problem">Skadet skjerm etter fall — sprekker i LCD og backlight ute. Logicboard og SSD 100% OK. Lader og batteri nytt.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">4 500 kr</div><div class="card-price-note">Ny skjerm ca 2500 kr</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'MacBook Pro 15 2019', 4500)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('MacBook Pro 15 2019', 4500)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Bergen</div>
+          <button class="share-btn" onclick="shareAd(event,\'MacBook Pro')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-tags="akutt motor" data-type="elektronikk" data-price="1200">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/sony_a7iii.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-urgent">Akutt</span><span class="badge badge-elek">Elektronikk</span><span class="badge badge-type">Sensor</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Sony A7 III</div>
+        <div class="card-model">Speilløst kamera · 2018</div>
+        <div class="card-time">🕐 2 dager siden</div>
+        <div class="card-problem">Bildesensor skadet etter fukt. Kamerahus ellers komplett. Lukker og mekanikk virker.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">1 200 kr</div><div class="card-price-note">Som den er</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Sony A7 III kamera', 1200)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Sony A7 III kamera', 1200)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Tromsø</div>
+          <button class="share-btn" onclick="shareAd(event,\'Sony A7 III')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYKKEL -->
+    <div class="card" data-tags="akutt karosseri" data-type="sykkel" data-price="3500">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/trek_marlin.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-urgent">Akutt</span><span class="badge badge-sykkel">Sykkel</span><span class="badge badge-type">Ramme</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Trek Marlin 7</div>
+        <div class="card-model">MTB · 2021 · 29"</div>
+        <div class="card-time">🕐 1 uke siden</div>
+        <div class="card-problem">Forgaffel knust etter styrt. Rammen er hel og ubeskadiget. Alle komponenter OK — Shimano Deore, hydrauliske bremser.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">3 500 kr</div><div class="card-price-note">Ny gaffel ca 1500 kr</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Trek Marlin 7 MTB', 3500)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Trek Marlin 7 MTB', 3500)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Oslo</div>
+          <button class="share-btn" onclick="shareAd(event,\'Trek Marlin 7')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-tags="middels motor" data-type="sykkel" data-price="6800">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/specialized_vado.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-medium">Middels</span><span class="badge badge-sykkel">Sykkel</span><span class="badge badge-type">Batteri</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Specialized Turbo Vado</div>
+        <div class="card-model">El-sykkel · 2020</div>
+        <div class="card-time">🕐 5 dager siden</div>
+        <div class="card-problem">Batteri degradert til under 40% kapasitet. Motor og display fungerer. Sykkel ellers i fin stand.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">6 800 kr</div><div class="card-price-note">Lader inkludert</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Specialized Turbo Vado', 6800)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Specialized Turbo Vado', 6800)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Trondheim</div>
+          <button class="share-btn" onclick="shareAd(event,\'Specialized Turbo Vado')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERKTØY -->
+    <div class="card" data-tags="middels motor" data-type="verktoy" data-price="900">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/makita_dhp484.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-medium">Middels</span><span class="badge badge-verkty">Verktøy</span><span class="badge badge-type">Motor</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Makita DHP484</div>
+        <div class="card-model">Slagbor · 18V</div>
+        <div class="card-time">🕐 2 dager siden</div>
+        <div class="card-problem">Motor begynte å lage lyd og mistet kraft. Chuck og mekanikk OK. Selges med 2 batterier og lader.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">900 kr</div><div class="card-price-note">Inkl. batterier</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Makita DHP484 slagbor', 900)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Makita DHP484 slagbor', 900)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Drammen</div>
+          <button class="share-btn" onclick="shareAd(event,\'Makita DHP484')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-tags="mindre karosseri" data-type="verktoy" data-price="1800">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/festool_ts55.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-minor">Mindre</span><span class="badge badge-verkty">Verktøy</span><span class="badge badge-type">Karosseri</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Festool TS 55</div>
+        <div class="card-model">Sirkelsag · 240V</div>
+        <div class="card-time">🕐 3 dager siden</div>
+        <div class="card-problem">Plastdekslet over klingeguiden knust. Sagen fungerer perfekt. Selges med skinne og 2 blader.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">1 800 kr</div><div class="card-price-note">Nypris 5 500 kr</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Festool TS 55 sirkelsag', 1800)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Festool TS 55 sirkelsag', 1800)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Stavanger</div>
+          <button class="share-btn" onclick="shareAd(event,\'Festool TS 55')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-tags="akutt motor" data-type="verktoy" data-price="2200">
+      <div class="card-img-placeholder" style="padding:0;overflow:hidden;"><img src="bilder/hilti_ag125.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-badges"><span class="badge badge-urgent">Akutt</span><span class="badge badge-verkty">Verktøy</span><span class="badge badge-type">Motor</span></div>
+        <button class="fav-btn" onclick="toggleFav(event,this)" title="Legg til i favoritter">♡</button>
+        <div class="card-make">Hilti AG 125</div>
+        <div class="card-model">Vinkelsliper · 125mm</div>
+        <div class="card-time">🕐 1 dag siden</div>
+        <div class="card-problem">Kortslutning i anker-viklinga etter overoppheting. Huset og gear er perfekt. Trenger ny anker eller omvikling.</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">2 200 kr</div><div class="card-price-note">Selges med kofferter</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this, 'Hilti AG 125 vinkelsliper', 2200)">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('Hilti AG 125 vinkelsliper', 2200)">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 Oslo</div>
+          <button class="share-btn" onclick="shareAd(event,\'Hilti AG 125')">↗ Del</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" id="emptyState">Ingen annonser matcher filteret ditt.</div>
+  </div>
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-brand">Repp<span>objekt</span> — Lav pris, egen innsats</div>
+  <div class="footer-social">
+    <a class="social-btn" href="https://facebook.com/reppobjekt" target="_blank" title="Facebook">
+      <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      Facebook
+    </a>
+    <a class="social-btn" href="https://x.com/reppobjekt" target="_blank" title="X / Twitter">
+      <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      X
+    </a>
+    <a class="social-btn" href="https://instagram.com/reppobjekt" target="_blank" title="Instagram">
+      <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      Instagram
+    </a>
+    <a class="social-btn" href="https://youtube.com/@reppobjekt" target="_blank" title="YouTube">
+      <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      YouTube
+    </a>
+  </div>
+  <div style="display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap; font-size:0.82rem;">
+    <a onclick="openOmOss()" style="color:var(--text2); cursor:pointer; text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text2)'">Om oss</a>
+    <a onclick="openKontakt()" style="color:var(--text2); cursor:pointer; text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text2)'">Kontakt oss</a>
+    <a onclick="openBiltransport()" style="color:var(--text2); cursor:pointer; text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text2)'">🚚 Biltransport</a>
+    <a onclick="openBedriftReg()" style="color:var(--text2); cursor:pointer; text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text2)'">Bedriftsregistrering</a>
+    <span style="color:var(--text3);">Vilkår · Personvern · © 2026 Reppobjekt</span>
+  </div>
+</footer>
+
+<!-- ===== DETAIL MODAL ===== -->
+<div class="modal-overlay" id="detailModal" onclick="handleOverlay(event,'detailModal')">
+  <div class="modal detail-modal-inner">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="detailTitle">—</div>
+        <div class="modal-subtitle" id="detailLocation">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-img-area" id="detailImgArea">
+        <span id="detailEmoji" style="font-size:4rem;">🚗</span>
+      </div>
+      <div class="detail-thumb-row" id="detailThumbs"></div>
+      <div class="detail-price-row">
+        <div class="detail-price" id="detailPrice">—</div>
+        <button class="detail-fav-btn" id="detailFavBtn" onclick="toggleDetailFav()">♡ Favoritt</button>
+        <button class="detail-fav-btn" onclick="openAIPrisBtnFromDetail()" style="margin-left:auto;">🤖 Priskalkulator</button>
+      </div>
+      <div class="detail-info-grid" id="detailInfoGrid"></div>
+      <div class="detail-desc" id="detailDesc">—</div>
+      <div class="detail-action-row">
+        <button class="prut-btn" id="detailPrutBtn">💬 Prut</button>
+        <button class="kjop-btn" id="detailKjopBtn">🛒 Kjøp</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MIN SIDE MODAL ===== -->
+<div class="modal-overlay" id="minSideModal" onclick="handleOverlay(event,'minSideModal')">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Min side</div>
+        <div class="modal-subtitle" id="minSideUser">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('minSideModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="minside-tabs">
+        <button class="minside-tab active" onclick="switchMinSide('fav',this)">❤️ Favoritter</button>
+        <button class="minside-tab" onclick="switchMinSide('mine',this)">📋 Mine annonser</button>
+      </div>
+      <div class="minside-content" id="minSideContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== AI PRISBEREGNER MODAL ===== -->
+<div class="modal-overlay" id="aiModal" onclick="handleOverlay(event,'aiModal')">
+  <div class="modal ai-modal-inner">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">🤖 Priskalkulator</div>
+        <div class="modal-subtitle">Estimert reparasjonskostnad basert på AI</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('aiModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="ai-form-grid">
+        <div class="form-group"><label>Merke *</label><input type="text" id="aiMerke" placeholder="f.eks. BMW"></div>
+        <div class="form-group"><label>Modell</label><input type="text" id="aiModell" placeholder="f.eks. 3-serie E46"></div>
+        <div class="form-group"><label>Årsmodell</label><input type="number" id="aiAar" placeholder="2005" min="1900" max="2030"></div>
+        <div class="form-group"><label>Kilometerstand</label><input type="text" id="aiKm" placeholder="150 000 km"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:0.7rem;">
+        <label>Feil / problem *</label>
+        <textarea id="aiFeil" placeholder="Beskriv hva som er galt. F.eks: Motorhavari N54, spist stempel, trenger full motorrenovering." style="min-height:90px;"></textarea>
+      </div>
+      <div class="error-msg" id="aiError">Fyll ut merke og feilbeskrivelse.</div>
+      <button class="submit-btn" onclick="runAIPris()">Beregn reparasjonskostnad 🤖</button>
+      <div class="ai-loading" id="aiLoading" style="display:none;">AI beregner kostnad</div>
+      <div class="ai-result" id="aiResult">
+        <div class="ai-result-label">Estimert reparasjonskostnad</div>
+        <div class="ai-result-price" id="aiResultPrice">—</div>
+        <div class="ai-result-text" id="aiResultText">—</div>
+        <div style="font-size:0.72rem;color:var(--text3);margin-top:0.8rem;">⚠️ Dette er et AI-estimat basert på generell kunnskap. Innhent alltid tilbud fra fagkyndige verksteder.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RABATT INFO MODAL ===== -->
+<div class="modal-overlay" id="rabattModal" onclick="handleOverlay(event,'rabattModal')">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <div><div class="modal-title">🛒 Rabatt på deler</div><div class="modal-subtitle">Eksklusive avtaler for RepoBjekt-brukere</div></div>
+      <button class="modal-close" onclick="closeModal('rabattModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:0.8rem;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.3rem;">🔧 Autodoc</div>
+          <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem;">Opptil 40% rabatt på originaldeler og ettermarkedsdeler for alle merker.</div>
+          <a href="https://www.autodoc.no" target="_blank" style="color:var(--accent2);font-size:0.8rem;">autodoc.no →</a>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.3rem;">🏎️ Bilxtra</div>
+          <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem;">Norges største kjede for bildeler og tilbehør. RepoBjekt-kode kommer.</div>
+          <a href="https://www.bilxtra.no" target="_blank" style="color:var(--accent2);font-size:0.8rem;">bilxtra.no →</a>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.3rem;">⚙️ Reservedeler24</div>
+          <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem;">Spesialdeler og sjeldne komponenter. Eksklusive priser for registrerte brukere.</div>
+          <a href="https://www.reservedeler24.no" target="_blank" style="color:var(--accent2);font-size:0.8rem;">reservedeler24.no →</a>
+        </div>
+      </div>
+      <div style="color:var(--text3);font-size:0.75rem;margin-top:1rem;">Fulle rabattkoder og avtaler aktiveres ved lansering av RepoBjekt.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NOTIFICATION PANEL ===== -->
+<div class="panel-overlay" id="notifPanel">
+  <div class="panel-backdrop" onclick="closePanel('notifPanel')"></div>
+  <div class="panel-drawer">
+    <div class="panel-title">🔔 Varsler</div>
+    <div class="panel-item">
+      <div class="panel-item-icon">💬</div>
+      <div class="panel-item-body">
+        <div class="panel-item-title">Nytt tilbud på BMW 5-serie</div>
+        <div class="panel-item-sub">Noen har sendt deg et pruttilbud på 15 000 kr</div>
+        <div class="panel-item-time">For 2 timer siden</div>
+      </div>
+    </div>
+    <div class="panel-item">
+      <div class="panel-item-icon">❤️</div>
+      <div class="panel-item-body">
+        <div class="panel-item-title">Din annonse er lagt til i favoritter</div>
+        <div class="panel-item-sub">VW Golf Mk5 har fått 3 nye favoritter</div>
+        <div class="panel-item-time">For 5 timer siden</div>
+      </div>
+    </div>
+    <div class="panel-item">
+      <div class="panel-item-icon">🆕</div>
+      <div class="panel-item-body">
+        <div class="panel-item-title">Ny annonse i din kategori</div>
+        <div class="panel-item-sub">Kawasaki Ninja — Motorskade · Oslo</div>
+        <div class="panel-item-time">I går</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MESSAGES PANEL ===== -->
+<div class="panel-overlay" id="msgPanel">
+  <div class="panel-backdrop" onclick="closePanel('msgPanel')"></div>
+  <div class="panel-drawer">
+    <div class="panel-title">✉️ Meldinger</div>
+    <div class="panel-item">
+      <div class="panel-item-icon">👤</div>
+      <div class="panel-item-body">
+        <div class="panel-item-title">Ola Nordmann</div>
+        <div class="panel-item-sub">Hei! Er bilen fortsatt tilgjengelig?</div>
+        <div class="panel-item-time">For 1 time siden</div>
+      </div>
+    </div>
+    <div class="panel-item">
+      <div class="panel-item-icon">👤</div>
+      <div class="panel-item-body">
+        <div class="panel-item-title">Kari Hansen</div>
+        <div class="panel-item-sub">Kan du sende flere bilder av motoren?</div>
+        <div class="panel-item-time">For 3 timer siden</div>
+      </div>
+    </div>
+    <div class="panel-item">
+      <div class="panel-item-icon">🤖</div>
+      <div class="panel-item-body">
+        <div class="panel-item-title">RepoBjekt Support</div>
+        <div class="panel-item-sub">Velkommen til RepoBjekt! 🎉</div>
+        <div class="panel-item-time">I går</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BESTILL VERKTØY MODAL ===== -->
+<div class="modal-overlay" id="verktoyModal" onclick="handleOverlay(event,'verktoyModal')">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <div><div class="modal-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M21.7 2.3a1 1 0 0 0-1.4 0l-9 9-1.8-1-1.4 1.4 1 1.8-4.8 4.8a2 2 0 0 0 0 2.8l.6.6a2 2 0 0 0 2.8 0l4.8-4.8 1.8 1 1.4-1.4-1-1.8 9-9a1 1 0 0 0 0-1.4z"/></svg> Bestill verktøy</div><div class="modal-subtitle">Profesjonelt og hobbyverktøy til gode priser</div></div>
+      <button class="modal-close" onclick="closeModal('verktoyModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:0.8rem;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.3rem;">🟢 Clas Ohlson</div>
+          <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem;">Stort utvalg av håndverktøy, elektroverktøy og tilbehør for både hobbyist og proff.</div>
+          <a href="https://www.clasohlson.com/no" target="_blank" style="color:var(--accent2);font-size:0.8rem;">clasohlson.com →</a>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.3rem;">🔴 Biltema</div>
+          <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem;">Billig og bra verktøy for bilreparasjon, vedlikehold og verksted. Stort lager i Norge.</div>
+          <a href="https://www.biltema.no" target="_blank" style="color:var(--accent2);font-size:0.8rem;">biltema.no →</a>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.3rem;">⚫ Würth</div>
+          <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem;">Profesjonelt verktøy og forbruksmateriell for bilverksted og industri. Kjent for høy kvalitet.</div>
+          <a href="https://www.wuerth.no" target="_blank" style="color:var(--accent2);font-size:0.8rem;">wuerth.no →</a>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.3rem;">🔵 Tools</div>
+          <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem;">Skandinavias ledende verktøyspesialist. Bredt sortiment fra Makita, Festool, Bosch og flere.</div>
+          <a href="https://www.tools.no" target="_blank" style="color:var(--accent2);font-size:0.8rem;">tools.no →</a>
+        </div>
+      </div>
+      <div style="color:var(--text3);font-size:0.75rem;margin-top:1rem;">💡 Tips: Sjekk annonsene våre — du finner ofte brukt profesjonelt verktøy til svært gode priser.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REPARASJONSMANUALER MODAL ===== -->
+<div class="modal-overlay" id="reparasjonModal" onclick="handleOverlay(event,'reparasjonModal')">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <div><div class="modal-title">📖 Reparasjonsmanualer</div><div class="modal-subtitle">Finn manualer og teknisk dokumentasjon</div></div>
+      <button class="modal-close" onclick="closeModal('reparasjonModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:0.8rem;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.3rem;">🔧 Haynes Manualer</div>
+          <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem;">Detaljerte reparasjonsmanualer for de fleste bilmerker og modeller. Trinn-for-trinn instruksjoner.</div>
+          <a href="https://www.haynes.com" target="_blank" style="color:var(--accent2);font-size:0.8rem;">haynes.com →</a>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.3rem;">🛠️ ALLDATA</div>
+          <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem;">Profesjonell OEM-dokumentasjon, feilkoder og reparasjonsprosedyrer for verksteder og DIY-mekanikere.</div>
+          <a href="https://www.alldata.com" target="_blank" style="color:var(--accent2);font-size:0.8rem;">alldata.com →</a>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.3rem;">📱 AutoDoc App</div>
+          <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem;">Gratis videoguider og instruksjoner for vanlige reparasjoner — direkte på mobilen.</div>
+          <a href="https://www.autodoc.no" target="_blank" style="color:var(--accent2);font-size:0.8rem;">autodoc.no →</a>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.3rem;">🎥 YouTube</div>
+          <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem;">Søk på bilmerke + problem på YouTube — enorme mengder gratis videoveiledninger fra mekanikere.</div>
+          <a href="https://www.youtube.com" target="_blank" style="color:var(--accent2);font-size:0.8rem;">youtube.com →</a>
+        </div>
+      </div>
+      <div style="color:var(--text3);font-size:0.75rem;margin-top:1rem;">💡 Tips: Kombiner manualene med vår Priskalkulator for å få et estimat på hva reparasjonen vil koste.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LOGIN MODAL ===== -->
+<div class="modal-overlay" id="loginModal" onclick="handleOverlay(event,'loginModal')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Logg inn</div>
+        <div class="modal-subtitle">Logg inn for å legge ut annonser</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="error-msg" id="loginError">Feil e-post eller passord.</div>
+      <div class="auth-success" id="loginSuccess">Konto opprettet! Du er nå logget inn.</div>
+
+      <div class="form-group">
+        <label>E-post *</label>
+        <input type="email" id="loginEmail" placeholder="deg@epost.no" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Passord *</label>
+        <div class="password-wrap">
+          <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+          <button class="pw-toggle" type="button" onclick="togglePw('loginPassword',this)">👁</button>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="doLogin()">Logg inn</button>
+      <div class="auth-switch">Har du ikke konto? <a onclick="switchAuth('register')">Registrer deg</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REGISTER MODAL ===== -->
+<div class="modal-overlay" id="registerModal" onclick="handleOverlay(event,'registerModal')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Opprett konto</div>
+        <div class="modal-subtitle">Gratis — ta under ett minutt</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('registerModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="error-msg" id="registerError">Fyll ut alle felt. Passord må være minst 6 tegn.</div>
+
+      <div class="form-group">
+        <label>Navn *</label>
+        <input type="text" id="regName" placeholder="Ola Nordmann" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label>E-post *</label>
+        <input type="email" id="regEmail" placeholder="deg@epost.no" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Passord *</label>
+        <div class="password-wrap">
+          <input type="password" id="regPassword" placeholder="Min. 6 tegn" autocomplete="new-password">
+          <button class="pw-toggle" type="button" onclick="togglePw('regPassword',this)">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Bekreft passord *</label>
+        <div class="password-wrap">
+          <input type="password" id="regPassword2" placeholder="Gjenta passord" autocomplete="new-password">
+          <button class="pw-toggle" type="button" onclick="togglePw('regPassword2',this)">👁</button>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="doRegister()">Opprett konto</button>
+      <div class="auth-switch">Har du allerede konto? <a onclick="switchAuth('login')">Logg inn</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="registerModal" onclick="handleOverlay(event,'registerModal')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Opprett konto</div>
+        <div class="modal-subtitle">Gratis — tar under ett minutt</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('registerModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Account type toggle -->
+      <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+        <button class="minside-tab active" id="regTypePrivat" onclick="switchRegType('privat',this)" style="flex:1;">👤 Privat</button>
+        <button class="minside-tab" id="regTypeBedrift" onclick="switchRegType('bedrift',this)" style="flex:1;">🏢 Bedrift</button>
+      </div>
+
+      <div class="error-msg" id="registerError">Fyll ut alle felt. Passord må være minst 6 tegn.</div>
+
+      <div class="form-group">
+        <label>Navn *</label>
+        <input type="text" id="regName" placeholder="Ola Nordmann" autocomplete="name">
+      </div>
+
+      <!-- Bedrift-only fields -->
+      <div id="bedriftFields" style="display:none;">
+        <div class="form-group">
+          <label>Bedriftsnavn *</label>
+          <input type="text" id="regBedriftNavn" placeholder="Bilverksted AS">
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Org.nr *</label><input type="text" id="regOrgnr" placeholder="123 456 789"></div>
+          <div class="form-group"><label>Bransje</label>
+            <select id="regBransje">
+              <option value="">Velg bransje</option>
+              <option>Bilverksted</option><option>Bildeler</option><option>Bilforhandler</option>
+              <option>Båtverksted</option><option>MC-verksted</option><option>Annet</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Nettside</label><input type="url" id="regNettside" placeholder="https://www.mittverksted.no"></div>
+      </div>
+
+      <div class="form-group">
+        <label>E-post *</label>
+        <input type="email" id="regEmail" placeholder="deg@epost.no" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Passord *</label>
+        <div class="password-wrap">
+          <input type="password" id="regPassword" placeholder="Min. 6 tegn" autocomplete="new-password">
+          <button class="pw-toggle" type="button" onclick="togglePw('regPassword',this)">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Bekreft passord *</label>
+        <div class="password-wrap">
+          <input type="password" id="regPassword2" placeholder="Gjenta passord" autocomplete="new-password">
+          <button class="pw-toggle" type="button" onclick="togglePw('regPassword2',this)">👁</button>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="doRegister()">Opprett konto</button>
+      <div class="auth-switch">Har du allerede konto? <a onclick="switchAuth('login')">Logg inn</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EMAIL CONFIRMATION MODAL ===== -->
+<div class="modal-overlay" id="emailConfirmModal" onclick="handleOverlay(event,'emailConfirmModal')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">📧 Bekreft e-posten din</div>
+      <button class="modal-close" onclick="closeModal('emailConfirmModal')">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center; padding:2rem 1.75rem;">
+      <div style="font-size:3.5rem; margin-bottom:1rem;">📬</div>
+      <div style="font-size:1rem; font-weight:600; margin-bottom:0.5rem;">Bekreftelse sendt!</div>
+      <div style="color:var(--text2); font-size:0.88rem; margin-bottom:1.2rem; line-height:1.6;">
+        Vi har sendt en bekreftelses-e-post til <strong id="confirmEmailAddr">—</strong>.<br>
+        Klikk på lenken i e-posten for å aktivere kontoen din.
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;font-size:0.8rem;color:var(--text3);text-align:left;margin-bottom:1.2rem;">
+        💡 Sjekk spam/søppelpost hvis du ikke finner e-posten. Lenken er gyldig i 24 timer.
+      </div>
+      <button class="submit-btn" onclick="closeModal('emailConfirmModal')">Forstått</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== OM OSS MODAL ===== -->
+<div class="modal-overlay" id="omOssModal" onclick="handleOverlay(event,'omOssModal')">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-header">
+      <div><div class="modal-title">Om Reppobjekt</div></div>
+      <button class="modal-close" onclick="closeModal('omOssModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center; margin-bottom:1.5rem;">
+        <div style="font-size:2.5rem; font-family:'Syne',sans-serif; font-weight:800;">Repp<span style="color:var(--accent);">objekt</span></div>
+        <div style="color:var(--text3); font-size:0.9rem; margin-top:0.3rem;">Lav pris, egen innsats</div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:1.2rem; color:var(--text2); font-size:0.9rem; line-height:1.7;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.2rem;">
+          <div style="font-weight:600; color:var(--text); margin-bottom:0.5rem;">🔧 Hva er Reppobjekt?</div>
+          Reppobjekt er Norges første markedsplass dedikert til kjøretøy og gjenstander som trenger reparasjon.
+          Her kan du kjøpe skadde, ødelagte eller defekte objekter billig — og fikse dem selv eller bruke dem som delskilder.
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.2rem;">
+          <div style="font-weight:600; color:var(--text); margin-bottom:0.5rem;">🌱 Vår visjon</div>
+          Vi tror på gjenbruk, reparasjonskultur og bærekraft. Istedenfor at et kjøretøy med en feil havner på skraphaugen,
+          gir vi det en ny sjanse — hos noen som har kunnskapen og lysten til å fikse det.
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.2rem;">
+          <div style="font-weight:600; color:var(--text); margin-bottom:0.5rem;">🤝 For selgere og kjøpere</div>
+          Selgere kan raskt få solgt objekter de ikke selv kan reparere. Kjøpere — mekanikere, hobbyister og
+          DIY-entusiaster — finner prosjekter til langt under markedspris. Med AI-prisberegner og rabatt på deler gjør vi
+          det enda enklere å komme i gang.
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.2rem;">
+          <div style="font-weight:600; color:var(--text); margin-bottom:0.5rem;">🏢 Bedrifter</div>
+          Vi tilbyr også egne bedriftskontoer for verksteder, forhandlere og delspesialister — med admin-panel og
+          mulighet for å legge inn flere annonser effektivt.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== KONTAKT MODAL ===== -->
+<div class="modal-overlay" id="kontaktModal" onclick="handleOverlay(event,'kontaktModal')">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <div><div class="modal-title">Kontakt oss</div><div class="modal-subtitle">Vi svarer innen 24 timer</div></div>
+      <button class="modal-close" onclick="closeModal('kontaktModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.5rem;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.2rem;display:flex;gap:1rem;align-items:center;">
+          <div style="font-size:1.8rem;">📧</div>
+          <div>
+            <div style="font-weight:600;margin-bottom:0.2rem;">E-post</div>
+            <a href="/cdn-cgi/l/email-protection#f281939f9b9998939cc3cbcbc3b2959f939b9edc919d9f" style="color:var(--accent2);font-size:0.9rem;text-decoration:none;"><span class="__cf_email__" data-cfemail="2b584a464240414a451a12121a6b4c464a424705484446">[email&#160;protected]</span></a>
+          </div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.2rem;display:flex;gap:1rem;align-items:center;">
+          <div style="font-size:1.8rem;">💬</div>
+          <div>
+            <div style="font-weight:600;margin-bottom:0.2rem;">Live chat</div>
+            <div style="color:var(--text2);font-size:0.85rem;">Tilgjengelig via chatboten nede til høyre</div>
+          </div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.2rem;display:flex;gap:1rem;align-items:center;">
+          <div style="font-size:1.8rem;">📍</div>
+          <div>
+            <div style="font-weight:600;margin-bottom:0.2rem;">Adresse</div>
+            <div style="color:var(--text2);font-size:0.85rem;">Norge</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group"><label>Send oss en melding</label><input type="text" id="kontaktEmne" placeholder="Emne"></div>
+      <div class="form-group"><textarea id="kontaktMelding" placeholder="Skriv din melding her…" style="min-height:100px;"></textarea></div>
+      <button class="submit-btn" onclick="sendKontakt()">Send melding ✉️</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BILTRANSPORT MODAL ===== -->
+<div class="modal-overlay" id="biltransportModal" onclick="handleOverlay(event,'biltransportModal')">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <div><div class="modal-title">🚚 Bestill biltransport</div><div class="modal-subtitle">Henting og levering av kjøretøy i hele Norge</div></div>
+      <button class="modal-close" onclick="closeModal('biltransportModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:linear-gradient(135deg,rgba(255,74,26,0.06),rgba(255,184,48,0.06));border:1px solid rgba(255,184,48,0.15);border-radius:10px;padding:1rem;margin-bottom:1.2rem;font-size:0.85rem;color:var(--text2);line-height:1.6;">
+        🚗 Kjøpte du et objekt men trenger hjelp med transport? Vi kobler deg med pålitelige biltransport-selskaper i hele Norge.
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Hentested *</label><input type="text" id="btFra" placeholder="Oslo, gate/adresse"></div>
+        <div class="form-group"><label>Leveringssted *</label><input type="text" id="btTil" placeholder="Bergen, gate/adresse"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Kjøretøytype *</label>
+          <select id="btType">
+            <option value="">Velg type</option>
+            <option>Personbil</option><option>Varebil</option><option>MC / Moped</option>
+            <option>Veteranbil</option><option>ATV / Snøscooter</option><option>Båt på trailer</option>
+            <option>Lastebil / Arbeidsmaskin</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Vekt (ca. kg)</label><input type="number" id="btVekt" placeholder="1500"></div>
+      </div>
+      <div class="form-group"><label>Merke og modell</label><input type="text" id="btMerke" placeholder="BMW 3-serie E46"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Kjøres / trilles</label>
+          <select id="btKjores">
+            <option value="kjores">Kan kjøres</option>
+            <option value="trilles">Kan trilles (ikke starte)</option>
+            <option value="løftes">Må løftes (kran/lift)</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Ønsket dato</label><input type="date" id="btDato"></div>
+      </div>
+      <div class="form-group"><label>Din e-post *</label><input type="email" id="btEpost" placeholder="deg@epost.no"></div>
+      <div class="form-group"><label>Telefon</label><input type="tel" id="btTlf" placeholder="98765432"></div>
+      <div class="form-group"><label>Tillegsinfo</label><textarea id="btInfo" placeholder="Spesielle krav, tidspunkt, eller annet…" style="min-height:70px;"></textarea></div>
+      <div class="error-msg" id="btError">Fyll ut hentested, leveringssted, kjøretøytype og e-post.</div>
+      <button class="submit-btn" onclick="sendBiltransport()">Send transportforespørsel 🚚</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BILTRANSPORT BEKREFTELSE ===== -->
+<div class="modal-overlay" id="btOkModal" onclick="handleOverlay(event,'btOkModal')">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Forespørsel sendt! 🚚</div><button class="modal-close" onclick="closeModal('btOkModal')">✕</button></div>
+    <div class="modal-body" style="text-align:center;padding:2rem 1.75rem;">
+      <div style="font-size:3rem;margin-bottom:1rem;">✅</div>
+      <div style="color:var(--text2);font-size:0.88rem;line-height:1.6;">Din transportforespørsel er registrert. Vi sender deg tilbud fra transportører innen <strong>2 virkedager</strong>.</div>
+      <button class="submit-btn" onclick="closeModal('btOkModal')" style="margin-top:1.2rem;">Lukk</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BEDRIFT REGISTRERING MODAL ===== -->
+<div class="modal-overlay" id="bedriftModal" onclick="handleOverlay(event,'bedriftModal')">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <div><div class="modal-title">🏢 Bedriftsregistrering</div><div class="modal-subtitle">Opprett bedriftskonto og få tilgang til admin-panel</div></div>
+      <button class="modal-close" onclick="closeModal('bedriftModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-bottom:1.2rem;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;font-size:0.78rem;">
+          <div style="font-size:1.4rem;margin-bottom:0.3rem;">📋</div>Ubegrenset<br>annonser
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;font-size:0.78rem;">
+          <div style="font-size:1.4rem;margin-bottom:0.3rem;">📊</div>Admin<br>panel
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;font-size:0.78rem;">
+          <div style="font-size:1.4rem;margin-bottom:0.3rem;">⭐</div>Fremhevede<br>annonser
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Bedriftsnavn *</label><input type="text" id="bregNavn" placeholder="Bilverksted AS"></div>
+        <div class="form-group"><label>Org.nr *</label><input type="text" id="bregOrgnr" placeholder="123 456 789"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Kontaktperson *</label><input type="text" id="bregKontakt" placeholder="Ola Nordmann"></div>
+        <div class="form-group"><label>Stilling</label><input type="text" id="bregStilling" placeholder="Daglig leder"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>E-post *</label><input type="email" id="bregEmail" placeholder="firma@bedrift.no"></div>
+        <div class="form-group"><label>Telefon *</label><input type="tel" id="bregTlf" placeholder="22 33 44 55"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Bransje *</label>
+          <select id="bregBransje">
+            <option value="">Velg bransje</option>
+            <option>Bilverksted</option><option>Bildeler / Demonteringsverksted</option>
+            <option>Bilforhandler</option><option>Båtverksted</option><option>MC-verksted</option>
+            <option>Biltransport</option><option>Forsikring / Skadeoppgjør</option><option>Annet</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Nettside</label><input type="url" id="bregNettside" placeholder="https://mittverksted.no"></div>
+      </div>
+      <div class="form-group"><label>Beskriv bedriften (valgfritt)</label><textarea id="bregBeskriv" placeholder="Kort om hva dere tilbyr…" style="min-height:70px;"></textarea></div>
+      <div class="error-msg" id="bregError">Fyll ut alle obligatoriske felt.</div>
+      <button class="submit-btn" onclick="sendBedriftReg()">Send søknad om bedriftskonto 🏢</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BEDRIFT OK ===== -->
+<div class="modal-overlay" id="bedriftOkModal" onclick="handleOverlay(event,'bedriftOkModal')">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Søknad mottatt! 🏢</div><button class="modal-close" onclick="closeModal('bedriftOkModal')">✕</button></div>
+    <div class="modal-body" style="text-align:center;padding:2rem 1.75rem;">
+      <div style="font-size:3rem;margin-bottom:1rem;">✅</div>
+      <div style="color:var(--text2);font-size:0.88rem;line-height:1.6;">Takk for din søknad! Vi behandler bedriftsregistreringer innen <strong>1–2 virkedager</strong>. Du vil motta en e-post med innloggingsdetaljer til bedriftsportalen.</div>
+      <button class="submit-btn" onclick="closeModal('bedriftOkModal')" style="margin-top:1.2rem;">Lukk</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BEDRIFT ADMIN PANEL ===== -->
+<div class="modal-overlay" id="adminModal" onclick="handleOverlay(event,'adminModal')">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-header">
+      <div><div class="modal-title">📊 Bedrifts-adminpanel</div><div class="modal-subtitle" id="adminBedriftNavn">—</div></div>
+      <button class="modal-close" onclick="closeModal('adminModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Stats row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.8rem;margin-bottom:1.5rem;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:800;font-family:'Syne',sans-serif;color:var(--accent2);" id="adminStatAds">0</div>
+          <div style="font-size:0.72rem;color:var(--text3);margin-top:0.2rem;">Aktive annonser</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:800;font-family:'Syne',sans-serif;color:var(--green);">0</div>
+          <div style="font-size:0.72rem;color:var(--text3);margin-top:0.2rem;">Visninger</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:800;font-family:'Syne',sans-serif;color:var(--accent);">0</div>
+          <div style="font-size:0.72rem;color:var(--text3);margin-top:0.2rem;">Tilbud mottatt</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:800;font-family:'Syne',sans-serif;color:var(--accent2);">0</div>
+          <div style="font-size:0.72rem;color:var(--text3);margin-top:0.2rem;">Solgt</div>
+        </div>
+      </div>
+      <!-- Admin tabs -->
+      <div class="minside-tabs">
+        <button class="minside-tab active" onclick="switchAdminTab('annonser',this)">📋 Mine annonser</button>
+        <button class="minside-tab" onclick="switchAdminTab('ny',this)">➕ Ny annonse</button>
+        <button class="minside-tab" onclick="switchAdminTab('profil',this)">🏢 Bedriftsprofil</button>
+      </div>
+      <div id="adminContent" style="margin-top:1rem; min-height:180px;">
+        <div class="minside-empty">Ingen annonser ennå. Bruk «Ny annonse»-fanen for å publisere.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== KUNDESERVICE CHATBOT ===== -->
+<div id="chatWidget" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;">
+  <div id="chatBubble" onclick="toggleChat()" style="
+    width:54px;height:54px;border-radius:50%;background:var(--accent);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    font-size:1.4rem;box-shadow:0 4px 20px rgba(255,74,26,0.4);
+    transition:transform 0.2s;border:none;" title="Kundeservice">💬</div>
+  <div id="chatPanel" style="
+    display:none;position:absolute;bottom:66px;right:0;
+    width:320px;background:var(--surface);border:1px solid var(--border2);
+    border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    overflow:hidden;flex-direction:column;animation:fadeUp 0.2s ease;">
+    <div style="background:var(--accent);padding:0.9rem 1.1rem;display:flex;align-items:center;gap:0.7rem;">
+      <div style="font-size:1.3rem;">🤖</div>
+      <div>
+        <div style="font-weight:700;font-size:0.9rem;color:white;">Reppobjekt Support</div>
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.8);">● Online nå</div>
+      </div>
+      <button onclick="toggleChat()" style="margin-left:auto;background:none;border:none;color:white;cursor:pointer;font-size:1.1rem;">✕</button>
+    </div>
+    <div id="chatMessages" style="padding:1rem;display:flex;flex-direction:column;gap:0.7rem;max-height:280px;overflow-y:auto;font-size:0.83rem;"></div>
+    <div style="padding:0.7rem;border-top:1px solid var(--border);display:flex;gap:0.5rem;">
+      <input type="text" id="chatInput" placeholder="Skriv melding…" style="
+        flex:1;background:var(--surface2);border:1px solid var(--border2);
+        border-radius:8px;padding:0.45rem 0.7rem;color:var(--text);
+        font-family:'Outfit',sans-serif;font-size:0.82rem;outline:none;"
+        onkeydown="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()" style="
+        background:var(--accent);border:none;color:white;border-radius:8px;
+        padding:0.45rem 0.8rem;cursor:pointer;font-size:0.85rem;">→</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="postModal" onclick="handleOverlay(event,'postModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Legg ut annonse</div>
+        <div class="modal-subtitle">Velg kategori og fyll inn detaljer</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('postModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="type-selector">
+        <button class="type-sel-btn active" id="tBil"     onclick="selectPostType('bil')">🚗 Bil</button>
+        <button class="type-sel-btn"        id="tMC"      onclick="selectPostType('mc')">🏍️ MC</button>
+        <button class="type-sel-btn"        id="tTung"    onclick="selectPostType('tung')">🚛 Tyngre</button>
+        <button class="type-sel-btn"        id="tElek"    onclick="selectPostType('elektronikk')">💻 Elektronikk</button>
+        <button class="type-sel-btn"        id="tSykkel"  onclick="selectPostType('sykkel')">🚲 Sykkel</button>
+        <button class="type-sel-btn"        id="tVerktoy" onclick="selectPostType('verktoy')">🔧 Verktøy</button>
+      </div>
+      <div class="error-msg" id="postError">Fyll ut alle obligatoriske felt markert med *</div>
+
+      <div class="form-row">
+        <div class="form-group"><label id="merkeLabel">Merke *</label><input type="text" id="fMerke" placeholder="f.eks. BMW"></div>
+        <div class="form-group"><label id="modellLabel">Modell *</label><input type="text" id="fModell" placeholder="f.eks. 3-serie E46"></div>
+      </div>
+
+      <!-- Vehicle fields -->
+      <div id="vehicleFields">
+        <div class="form-row">
+          <div class="form-group"><label>Årsmodell</label><input type="number" id="fAar" placeholder="2005" min="1900" max="2030"></div>
+          <div class="form-group"><label id="kmLabel">Kilometerstand</label><input type="text" id="fKm" placeholder="150 000 km"></div>
+        </div>
+      </div>
+
+      <!-- Electronics-specific fields -->
+      <div id="elekFields" style="display:none;">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Produkttype *</label>
+            <select id="fElekType">
+              <option value="">Velg type</option>
+              <option value="Laptop">💻 Laptop / MacBook</option>
+              <option value="Stasjonær PC">🖥️ Stasjonær PC</option>
+              <option value="Skjerm">🖥️ Skjerm / Monitor</option>
+              <option value="Telefon">📱 Telefon / Nettbrett</option>
+              <option value="Kamera">📷 Kamera</option>
+              <option value="TV">📺 TV / Projektor</option>
+              <option value="Spillkonsoll">🎮 Spillkonsoll</option>
+              <option value="Lyd">🔊 Lyd / Hodetelefoner</option>
+              <option value="Annet">📦 Annet elektronikk</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Type feil *</label>
+            <select id="fElekFeil">
+              <option value="">Velg feiltype</option>
+              <option value="Skjerm">🔲 Skadet skjerm</option>
+              <option value="Batteri">🔋 Batteri defekt</option>
+              <option value="Strøm">⚡ Starter ikke / strømproblem</option>
+              <option value="Vannskade">💧 Vannskade</option>
+              <option value="Tastatur">⌨️ Tastatur / knapper</option>
+              <option value="Programvare">💾 Programvare / OS</option>
+              <option value="Kortslutning">🔌 Kortslutning / brent</option>
+              <option value="Mekanisk">⚙️ Mekanisk skade</option>
+              <option value="Annet">❓ Annet</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Lagring</label>
+            <select id="fElekLagring">
+              <option value="">Ikke relevant</option>
+              <option value="128 GB">128 GB</option>
+              <option value="256 GB">256 GB</option>
+              <option value="512 GB">512 GB</option>
+              <option value="1 TB">1 TB</option>
+              <option value="2 TB+">2 TB+</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>RAM</label>
+            <select id="fElekRam">
+              <option value="">Ikke relevant</option>
+              <option value="4 GB">4 GB</option>
+              <option value="8 GB">8 GB</option>
+              <option value="16 GB">16 GB</option>
+              <option value="32 GB">32 GB</option>
+              <option value="64 GB+">64 GB+</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Serienummer / IMEI (valgfritt)</label>
+          <input type="text" id="fElekSerial" placeholder="f.eks. C02XK1JKLVCG">
+        </div>
+      </div>
+
+      <!-- Feiltype (non-electronics) -->
+      <div id="feiltypeRow">
+        <div class="form-group">
+          <label>Feiltype *</label>
+          <select id="fFeiltype">
+            <option value="">Velg feiltype</option>
+            <option value="motor">Motor</option>
+            <option value="girkasse">Girkasse</option>
+            <option value="karosseri">Karosseri / Rust / Ramme</option>
+            <option value="elektrisk">Elektrisk</option>
+            <option value="bremser">Bremser / Fjæring</option>
+            <option value="batteri">Batteri</option>
+            <option value="hydraulikk">Hydraulikk</option>
+            <option value="annet">Annet</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Alvorlighetsgrad *</label>
+          <select id="fAlvor">
+            <option value="">Velg alvorlighet</option>
+            <option value="akutt">Akutt — Kan ikke brukes</option>
+            <option value="middels">Middels — Krever reparasjon</option>
+            <option value="mindre">Mindre — Kan vente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Pris (kr) *</label>
+          <input type="number" id="fPris" placeholder="15000" min="0">
+        </div>
+      </div>
+
+      <div class="form-group"><label>Beskrivelse *</label><textarea id="fBeskrivelse" placeholder="Beskriv hva som er galt. Vær ærlig og detaljert."></textarea></div>
+
+      <!-- Image upload -->
+      <div class="form-group">
+        <label>Bilder (maks 5)</label>
+        <div class="img-upload-area" id="imgUploadArea" onclick="document.getElementById('fBilder').click()">
+          <input type="file" id="fBilder" accept="image/*" multiple style="display:none" onchange="handleImages(this)">
+          <div class="img-upload-placeholder" id="imgPlaceholder">
+            <span style="font-size:1.5rem;">📷</span>
+            <span>Klikk for å laste opp bilder</span>
+            <span style="font-size:0.72rem;color:var(--text3);">JPG, PNG — maks 5 stk</span>
+          </div>
+          <div class="img-preview-row" id="imgPreviewRow"></div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group"><label>Sted *</label><input type="text" id="fSted" placeholder="Oslo, Bergen..."></div>
+        <div class="form-group"><label>Kontakt (tlf / e-post)</label><input type="text" id="fKontakt" placeholder="98765432"></div>
+      </div>
+
+      <button class="submit-btn" onclick="submitPost()">Publiser annonse</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== KJØP / KONTRAKT MODAL ===== -->
+<div class="modal-overlay" id="kjopModal" onclick="handleOverlay(event,'kjopModal')">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">⚠️ Kjøpsvilkår</div>
+        <div class="modal-subtitle" id="kjopAdName2">Les nøye før du går videre</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('kjopModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="contract-box" id="contractScroll">
+        <h3>§ 1 — RepoBjekt er en formidlingstjeneste</h3>
+        <p>RepoBjekt er kun en markedsplass som kobler kjøper og selger. RepoBjekt er ikke part i kjøpsavtalen og har intet ansvar for objektets tilstand, beskrivelse, eller at handelen gjennomføres.</p>
+
+        <h3>§ 2 — Objektet selges «som det er» (as-is)</h3>
+        <p>Alle objekter på RepoBjekt annonseres eksplisitt som <strong>reparasjonsobjekter</strong>. Kjøper overtar alle kjente og ukjente feil og mangler. Annonsen kan være ufullstendig, upresis eller inneholde feil — dette er kjøpers risiko å avdekke.</p>
+        <p class="law-ref">Jf. avhendingslova § 3-9 og kjøpslova § 19 — ved «som det er»-klausul må feilen være vesentlig for at mangel skal foreligge.</p>
+
+        <h3>§ 3 — Kjøpers undersøkelsesplikt (avgjørende!)</h3>
+        <p><strong>Kjøper har plikt til å undersøke objektet grundig før kjøp.</strong> Du kan ikke senere reklamere på feil du oppdaget, eller burde ha oppdaget. Det anbefales sterkt å:</p>
+        <p>• Be om fysisk visning og prøvekjøring/test<br>• Hente inn fagkyndig vurdering<br>• Innhente historikk, servicelogg, EU-kontrollrapport<br>• Sjekke om objektet er beheftet med pant eller gjeld</p>
+        <p class="law-ref">Jf. avhendingslova § 3-10 og forbrukerkjøpslova § 20.</p>
+
+        <h3>§ 4 — Mangelsvurdering ved «som det er»-salg</h3>
+        <p>En mangel foreligger kun dersom objektet er i <strong>vesentlig dårligere stand</strong> enn kjøper hadde grunn til å forvente — terskelen er høy ved kjøp av reparasjonsobjekter.</p>
+        <p class="law-ref">Jf. kjøpslova § 17 og § 19 (2).</p>
+
+        <h3>§ 5 — Angrerett gjelder ikke</h3>
+        <p>Kjøp mellom to privatpersoner er ikke omfattet av angrerettloven. Du har <strong>ingen angrefrist</strong> ved privat kjøp og salg.</p>
+        <p class="law-ref">Jf. angrerettloven § 2.</p>
+
+        <h3>§ 6 — Reklamasjon og frister</h3>
+        <p>Reklamasjonsfrist ved kjøpsloven: <strong>2 år</strong>. Ved forbrukerkjøp: <strong>5 år</strong>. Reklamasjon må skje innen rimelig tid etter at feilen ble oppdaget.</p>
+        <p class="law-ref">Jf. kjøpslova § 32 og forbrukerkjøpslova § 27.</p>
+
+        <h3>§ 7 — Selgers opplysningsplikt</h3>
+        <p>Dersom selger <strong>bevisst</strong> har fortiet vesentlige feil, kan dette utgjøre en mangel selv ved «som det er»-salg — og kan i grove tilfeller være straffbart.</p>
+        <p class="law-ref">Jf. kjøpslova § 19 (1) b og avhendingslova § 3-7.</p>
+
+        <h3>§ 8 — Betaling og risikoovergang</h3>
+        <p>Risikoen går over på kjøper når objektet <strong>overtas</strong>. RepoBjekt anbefaler betaling via Vipps eller bank — alltid med skriftlig kvittering.</p>
+      </div>
+
+      <div class="contract-checks">
+        <div class="check-row" id="check1row" onclick="toggleCheck('chk1','check1row',event)">
+          <input type="checkbox" id="chk1" onchange="syncCheck('chk1','check1row')">
+          <label for="chk1">Jeg har <strong>lest og forstått</strong> kjøpsvilkårene, inkludert at objektet selges «som det er» uten garanti.</label>
+        </div>
+        <div class="check-row" id="check2row" onclick="toggleCheck('chk2','check2row',event)">
+          <input type="checkbox" id="chk2" onchange="syncCheck('chk2','check2row')">
+          <label for="chk2">Jeg er klar over at jeg har <strong>undersøkelsesplikt</strong> og ikke kan reklamere på feil jeg kjente til eller burde avdekket.</label>
+        </div>
+        <div class="check-row" id="check3row" onclick="toggleCheck('chk3','check3row',event)">
+          <input type="checkbox" id="chk3" onchange="syncCheck('chk3','check3row')">
+          <label for="chk3">Jeg forstår at <strong>annonsen kan være mangelfull</strong> og at det er mitt ansvar å innhente nok informasjon før kjøp.</label>
+        </div>
+        <div class="check-row" id="check4row" onclick="toggleCheck('chk4','check4row',event)">
+          <input type="checkbox" id="chk4" onchange="syncCheck('chk4','check4row')">
+          <label for="chk4">Jeg aksepterer at <strong>RepoBjekt ikke er part</strong> i kjøpsavtalen og ikke kan holdes ansvarlig.</label>
+        </div>
+      </div>
+
+      <div class="error-msg" id="kjopError">Du må huke av alle punktene over for å gå videre.</div>
+      <button class="kjop-confirm-btn" id="kjopConfirmBtn" onclick="confirmKjop()">Jeg godtar vilkårene — Kontakt selger 🛒</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== KJØP BEKREFTELSE ===== -->
+<div class="modal-overlay" id="kjopOkModal" onclick="handleOverlay(event,'kjopOkModal')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">Klar for kjøp!</div>
+      <button class="modal-close" onclick="closeModal('kjopOkModal')">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center; padding: 2rem 1.75rem;">
+      <div class="confirm-icon green">🛒</div>
+      <div class="confirm-text" id="kjopOkText"></div>
+      <button class="submit-btn" onclick="closeModal('kjopOkModal')" style="margin-top:0;">Lukk</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PRUT MODAL ===== -->
+<div class="modal-overlay" id="prutModal" onclick="handleOverlay(event,'prutModal')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Send tilbud 💬</div>
+        <div class="modal-subtitle">Gi din prutepris direkte til selger</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('prutModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="prut-ad-info">
+        <div class="prut-ad-name" id="prutAdName">—</div>
+        <div class="prut-ad-price" id="prutAdPrice">Prisantydning: —</div>
+      </div>
+      <div class="error-msg" id="prutError">Fyll ut din tilbudspris.</div>
+      <div class="form-group">
+        <label>Din tilbudspris (kr) *</label>
+        <input type="number" id="prutPris" placeholder="f.eks. 12 000" min="0">
+      </div>
+      <div class="form-group">
+        <label>Melding til selger</label>
+        <textarea id="prutMelding" placeholder="Hei! Jeg er interessert. Kan vi avtale visning?"></textarea>
+      </div>
+      <button class="prut-btn-submit" onclick="sendPrut()">Send tilbud 🤝</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PRUT BEKREFTELSE ===== -->
+<div class="modal-overlay" id="prutOkModal" onclick="handleOverlay(event,'prutOkModal')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">Tilbud sendt!</div>
+      <button class="modal-close" onclick="closeModal('prutOkModal')">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center; padding: 2rem 1.75rem;">
+      <div class="confirm-icon gold">🤝</div>
+      <div class="confirm-text" id="prutOkText"></div>
+      <button class="submit-btn" onclick="closeModal('prutOkModal')" style="margin-top:0;">Lukk</button>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  let postType   = 'bil';
+  let activeTab  = 'alle';
+  let activeSev  = 'alle';
+  let prutTarget = { name: '', price: 0 };
+  let kjopTarget = { name: '', price: 0 };
+
+  // Modal helpers
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    if (!document.querySelector('.modal-overlay.open')) document.body.style.overflow = '';
+  }
+  function handleOverlay(e, id) {
+    if (e.target === document.getElementById(id)) closeModal(id);
+  }
+
+  // Post modal
+  function openPostModal() {
+    document.getElementById('postError').classList.remove('show');
+    openModal('postModal');
+  }
+
+  function selectPostType(type) {
+    postType = type;
+    ['tBil','tMC','tTung','tElek','tSykkel','tVerktoy'].forEach(id => {
+      document.getElementById(id).classList.remove('active');
+    });
+    const map = { bil:'tBil', mc:'tMC', tung:'tTung', elektronikk:'tElek', sykkel:'tSykkel', verktoy:'tVerktoy' };
+    document.getElementById(map[type]).classList.add('active');
+
+    const isElek = type === 'elektronikk';
+    document.getElementById('vehicleFields').style.display = isElek ? 'none' : '';
+    document.getElementById('elekFields').style.display = isElek ? '' : 'none';
+    document.getElementById('feiltypeRow').style.display = isElek ? 'none' : '';
+
+    // Update labels based on type
+    const merkeEl = document.getElementById('merkeLabel');
+    const modellEl = document.getElementById('modellLabel');
+    if (isElek) {
+      merkeEl.textContent = 'Merke *';
+      modellEl.textContent = 'Modell / Navn *';
+    } else if (type === 'verktoy') {
+      merkeEl.textContent = 'Merke *';
+      modellEl.textContent = 'Produktnavn *';
+      document.getElementById('kmLabel').textContent = 'Timer / Alder';
+    } else if (type === 'sykkel') {
+      merkeEl.textContent = 'Merke *';
+      modellEl.textContent = 'Modell *';
+      document.getElementById('kmLabel').textContent = 'Hjulstørrelse / km';
+    } else if (type === 'tung') {
+      document.getElementById('kmLabel').textContent = 'Driftstimer / km';
+    } else {
+      document.getElementById('kmLabel').textContent = 'Kilometerstand';
+    }
+  }
+
+  // Image handling
+  let uploadedImages = []; // array of base64 data URLs
+
+  function handleImages(input) {
+    const files = Array.from(input.files).slice(0, 5);
+    uploadedImages = [];
+    const previewRow = document.getElementById('imgPreviewRow');
+    const placeholder = document.getElementById('imgPlaceholder');
+    previewRow.innerHTML = '';
+
+    const readers = files.map(file => new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        uploadedImages.push(e.target.result);
+        const wrap = document.createElement('div');
+        wrap.className = 'img-thumb-wrap';
+        wrap.innerHTML = `<img src="${e.target.result}"><button class="img-thumb-remove" onclick="removeImg(this,${uploadedImages.length-1})">✕</button>`;
+        previewRow.appendChild(wrap);
+        resolve();
+      };
+      reader.readAsDataURL(file);
+    }));
+
+    Promise.all(readers).then(() => {
+      placeholder.style.display = uploadedImages.length ? 'none' : 'flex';
+      previewRow.style.display = uploadedImages.length ? 'flex' : 'none';
+    });
+    // prevent propagation so area click doesn't re-open
+    input.value = '';
+  }
+
+  function removeImg(btn, idx) {
+    btn.stopPropagation && btn.stopPropagation();
+    uploadedImages.splice(idx, 1);
+    // Re-render thumbs
+    const previewRow = document.getElementById('imgPreviewRow');
+    previewRow.querySelectorAll('.img-thumb-wrap')[idx]?.remove();
+    // Re-index remove buttons
+    previewRow.querySelectorAll('.img-thumb-remove').forEach((b,i) => b.onclick = (e) => { e.stopPropagation(); removeImg(b,i); });
+    if (!uploadedImages.length) {
+      document.getElementById('imgPlaceholder').style.display = 'flex';
+      previewRow.style.display = 'none';
+    }
+  }
+
+  function submitPost() {
+    const merke       = document.getElementById('fMerke').value.trim();
+    const modell      = document.getElementById('fModell').value.trim();
+    const alvor       = document.getElementById('fAlvor').value;
+    const beskrivelse = document.getElementById('fBeskrivelse').value.trim();
+    const pris        = document.getElementById('fPris').value.trim();
+    const sted        = document.getElementById('fSted').value.trim();
+    const isElek      = postType === 'elektronikk';
+    const feiltype    = isElek
+      ? (document.getElementById('fElekFeil').value || 'annet')
+      : document.getElementById('fFeiltype').value;
+
+    if (!merke || !modell || !alvor || !feiltype || !beskrivelse || !pris || !sted) {
+      document.getElementById('postError').classList.add('show');
+      return;
+    }
+
+    const aar = isElek ? '' : document.getElementById('fAar').value.trim();
+    const km  = isElek ? '' : document.getElementById('fKm').value.trim();
+
+    // Build extra elek info for model line
+    let elekExtra = '';
+    if (isElek) {
+      const lagring = document.getElementById('fElekLagring').value;
+      const ram     = document.getElementById('fElekRam').value;
+      elekExtra = [lagring, ram].filter(Boolean).join(' · ');
+    }
+
+    document.getElementById('postError').classList.remove('show');
+    const card = buildCard({
+      merke, modell, aar, km: elekExtra || km,
+      alvor, feiltype, beskrivelse, pris, sted,
+      type: postType, images: [...uploadedImages]
+    });
+    document.getElementById('carGrid').insertBefore(card, document.getElementById('emptyState'));
+    updateCount();
+    addTickerItem(merke + ' ' + modell, feiltype, sted);
+    resetPostForm();
+    closeModal('postModal');
+    setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+  }
+
+  const typeEmoji = { bil:'🚗', mc:'🏍️', tung:'🚛', elektronikk:'💻', sykkel:'🚲', verktoy:'🔧' };
+  const typeBadge = {
+    bil:'', mc:'<span class="badge badge-mc">MC</span>',
+    tung:'<span class="badge badge-tung">Tyngre</span>',
+    elektronikk:'<span class="badge badge-elek">Elektronikk</span>',
+    sykkel:'<span class="badge badge-sykkel">Sykkel</span>',
+    verktoy:'<span class="badge badge-verkty">Verktøy</span>',
+  };
+
+  function buildCard({ merke, modell, aar, km, alvor, feiltype, beskrivelse, pris, sted, type, images }) {
+    const bc = alvor === 'akutt' ? 'badge-urgent' : alvor === 'middels' ? 'badge-medium' : 'badge-minor';
+    const bl = alvor === 'akutt' ? 'Akutt' : alvor === 'middels' ? 'Middels' : 'Mindre';
+    const fl = feiltype.charAt(0).toUpperCase() + feiltype.slice(1);
+    const fp = Number(pris).toLocaleString('nb-NO') + ' kr';
+    const ml = [modell, aar, km].filter(Boolean).join(' · ');
+    const tags = [alvor, feiltype, type].join(' ');
+    const pNum = Number(pris);
+    const adName = merke + ' ' + modell;
+
+    // Build image area
+    let imgHTML;
+    if (images && images.length > 0) {
+      const dots = images.map((_,i) => `<span class="img-dot${i===0?' active':''}" onclick="cardImgGo(this,${i})"></span>`).join('');
+      const imgs = images.map((src,i) => `<img src="${src}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:${i===0?1:0};transition:opacity 0.3s;" data-idx="${i}">`).join('');
+      imgHTML = `<div class="card-img-placeholder" style="position:relative;overflow:hidden;cursor:pointer;" onclick="cardImgNext(this)">
+        ${imgs}
+        ${images.length > 1 ? `<div class="img-dots">${dots}</div>` : ''}
+      </div>`;
+    } else {
+      imgHTML = `<div class="card-img-placeholder">${typeEmoji[type] || '📦'}</div>`;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.tags = tags;
+    card.dataset.type = type;
+    card.dataset.price = pNum;
+    card.innerHTML = `
+      ${imgHTML}
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge ${bc}">${bl}</span>
+          ${typeBadge[type] || ''}
+          <span class="badge badge-type">${fl}</span>
+        </div>
+        <div class="card-make">${merke}</div>
+        <div class="card-model">${ml}</div>
+        <div class="card-problem">${beskrivelse}</div>
+        <div class="card-footer">
+          <div class="card-price-block"><div class="card-price">${fp}</div><div class="card-price-note">Nettopp lagt ut</div></div>
+          <div class="card-actions">
+            <button class="prut-btn" onclick="openPrutModal(this,'${adName.replace(/'/g,"\\'")}',${pNum})">💬 Prut</button>
+            <button class="kjop-btn" onclick="openKjopModal('${adName.replace(/'/g,"\\'")}',${pNum})">🛒 Kjøp</button>
+          </div>
+          <div class="card-location">📍 ${sted}</div>
+        </div>
+      </div>`;
+    if (!isCardVisible(card)) card.style.display = 'none';
+    return card;
+  }
+
+  function cardImgNext(container) {
+    const imgs = container.querySelectorAll('img');
+    const dots = container.querySelectorAll('.img-dot');
+    if (imgs.length < 2) return;
+    let cur = [...imgs].findIndex(i => i.style.opacity === '1');
+    imgs[cur].style.opacity = '0';
+    dots[cur]?.classList.remove('active');
+    cur = (cur + 1) % imgs.length;
+    imgs[cur].style.opacity = '1';
+    dots[cur]?.classList.add('active');
+  }
+  function cardImgGo(dot, idx) {
+    const container = dot.closest('.card-img-placeholder');
+    const imgs = container.querySelectorAll('img');
+    const dots = container.querySelectorAll('.img-dot');
+    imgs.forEach((img,i) => img.style.opacity = i===idx?'1':'0');
+    dots.forEach((d,i) => d.classList.toggle('active', i===idx));
+  }
+
+  function resetPostForm() {
+    ['fMerke','fModell','fAar','fKm','fBeskrivelse','fPris','fSted','fKontakt',
+     'fElekSerial'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    ['fAlvor','fFeiltype','fElekType','fElekFeil','fElekLagring','fElekRam'].forEach(id => {
+      const el = document.getElementById(id); if(el) el.value = '';
+    });
+    uploadedImages = [];
+    document.getElementById('imgPreviewRow').innerHTML = '';
+    document.getElementById('imgPreviewRow').style.display = 'none';
+    document.getElementById('imgPlaceholder').style.display = 'flex';
+    selectPostType('bil');
+  }
+
+  // Kjøp modal
+  function openKjopModal(name, price) {
+    kjopTarget = { name, price };
+    document.getElementById('kjopAdName2').textContent = name + ' — ' + Number(price).toLocaleString('nb-NO') + ' kr';
+    ['chk1','chk2','chk3','chk4'].forEach(id => { document.getElementById(id).checked = false; });
+    ['check1row','check2row','check3row','check4row'].forEach(id => { document.getElementById(id).classList.remove('checked'); });
+    document.getElementById('kjopConfirmBtn').classList.remove('ready');
+    document.getElementById('kjopError').classList.remove('show');
+    document.getElementById('contractScroll').scrollTop = 0;
+    openModal('kjopModal');
+  }
+
+  function toggleCheck(cbId, rowId, event) {
+    if (event && event.target.type === 'checkbox') return;
+    const cb = document.getElementById(cbId);
+    cb.checked = !cb.checked;
+    document.getElementById(rowId).classList.toggle('checked', cb.checked);
+    updateKjopBtn();
+  }
+  function syncCheck(cbId, rowId) {
+    const cb = document.getElementById(cbId);
+    document.getElementById(rowId).classList.toggle('checked', cb.checked);
+    updateKjopBtn();
+  }
+  function updateKjopBtn() {
+    const all = ['chk1','chk2','chk3','chk4'].every(id => document.getElementById(id).checked);
+    document.getElementById('kjopConfirmBtn').classList.toggle('ready', all);
+  }
+  function confirmKjop() {
+    const all = ['chk1','chk2','chk3','chk4'].every(id => document.getElementById(id).checked);
+    if (!all) { document.getElementById('kjopError').classList.add('show'); return; }
+    closeModal('kjopModal');
+    document.getElementById('kjopOkText').innerHTML =
+      `Du har godtatt kjøpsvilkårene for <strong>${kjopTarget.name}</strong> til prisantydning <strong style="color:var(--accent2)">${Number(kjopTarget.price).toLocaleString('nb-NO')} kr</strong>.<br><br>
+      Ta kontakt med selger for å avtale visning, betaling og overlevering. Husk skriftlig kvittering.<br><br>
+      <span style="color:var(--text3);font-size:0.8rem;">RepoBjekt minner om: undersøk alltid objektet grundig og benytt fagkyndig hjelp ved behov.</span>`;
+    openModal('kjopOkModal');
+  }
+
+  // Prut modal
+  function openPrutModal(btn, name, price) {
+    prutTarget = { name, price };
+    document.getElementById('prutAdName').textContent = name;
+    document.getElementById('prutAdPrice').textContent = 'Prisantydning: ' + Number(price).toLocaleString('nb-NO') + ' kr';
+    document.getElementById('prutPris').value = '';
+    document.getElementById('prutMelding').value = '';
+    document.getElementById('prutError').classList.remove('show');
+    openModal('prutModal');
+  }
+  function sendPrut() {
+    const tilbud  = document.getElementById('prutPris').value.trim();
+    const melding = document.getElementById('prutMelding').value.trim();
+    if (!tilbud) { document.getElementById('prutError').classList.add('show'); return; }
+    document.getElementById('prutError').classList.remove('show');
+    closeModal('prutModal');
+    const sparing = prutTarget.price - Number(tilbud);
+    const sparText = sparing > 0 ? ` — ${sparing.toLocaleString('nb-NO')} kr under prisantydning` : '';
+    document.getElementById('prutOkText').innerHTML =
+      `Tilbudet ditt på <strong style="color:var(--accent2)">${Number(tilbud).toLocaleString('nb-NO')} kr</strong>${sparText} for <em>${prutTarget.name}</em> er sendt til selger.${melding ? '<br><br><em>"' + melding + '"</em>' : ''}`;
+    openModal('prutOkModal');
+  }
+
+  // Tabs & filters
+  function switchTab(tab, btn) {
+    activeTab = tab;
+    document.querySelectorAll('.type-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilters();
+  }
+  function filterSeverity(tag, btn) {
+    activeSev = tag;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilters();
+  }
+  function isCardVisible(card) {
+    const tags  = card.dataset.tags || '';
+    const type  = card.dataset.type || '';
+    const price = Number(card.dataset.price) || 0;
+    const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+    const locVal    = (document.getElementById('locationFilter')?.value || '').toLowerCase();
+    const priceMin  = Number(document.getElementById('priceMin')?.value || 0);
+    const priceMax  = Number(document.getElementById('priceMax')?.value || 0);
+
+    const tabOk  = activeTab === 'alle' || type === activeTab;
+    const sevOk  = activeSevFilters.size === 0 || [...activeSevFilters].some(s => tags.includes(s));
+    const priceOk = (!priceMin || price >= priceMin) && (!priceMax || price <= priceMax);
+    const locOk  = !locVal || (card.querySelector('.card-location')?.textContent || '').toLowerCase().includes(locVal);
+
+    let searchOk = true;
+    if (searchVal) {
+      const make  = (card.querySelector('.card-make')?.textContent || '').toLowerCase();
+      const model = (card.querySelector('.card-model')?.textContent || '').toLowerCase();
+      const prob  = (card.querySelector('.card-problem')?.textContent || '').toLowerCase();
+      const loc   = (card.querySelector('.card-location')?.textContent || '').toLowerCase();
+      searchOk = make.includes(searchVal) || model.includes(searchVal) || prob.includes(searchVal) || loc.includes(searchVal) || tags.includes(searchVal);
+    }
+    return tabOk && sevOk && priceOk && locOk && searchOk;
+  }
+  function applyFilters() {
+    // Update search clear button
+    const sv = document.getElementById('searchInput')?.value || '';
+    const clr = document.getElementById('searchClear');
+    if (clr) clr.style.display = sv ? 'block' : 'none';
+
+    const priceSort = document.getElementById('priceSort').value;
+    const grid = document.getElementById('carGrid');
+    const emptyState = document.getElementById('emptyState');
+    let cards = [...document.querySelectorAll('.card')];
+    let visible = cards.filter(c => isCardVisible(c));
+    if (priceSort === 'lav' || priceSort === 'hoy') {
+      visible.sort((a, b) => {
+        const pa = Number(a.dataset.price) || 0;
+        const pb = Number(b.dataset.price) || 0;
+        return priceSort === 'lav' ? pa - pb : pb - pa;
+      });
+      visible.forEach(c => grid.insertBefore(c, emptyState));
+    }
+    cards.forEach(c => { c.style.display = isCardVisible(c) ? '' : 'none'; });
+    const count = visible.length;
+    document.getElementById('countDisplay').textContent = count + ' objekt' + (count !== 1 ? 'er' : '');
+    emptyState.style.display = count === 0 ? 'block' : 'none';
+  }
+
+  function updateCount() {
+    const visible = [...document.querySelectorAll('.card')].filter(c => c.style.display !== 'none').length;
+    document.getElementById('countDisplay').textContent = visible + ' objekt' + (visible !== 1 ? 'er' : '');
+    const stat = document.getElementById('statAds'); if(stat) stat.textContent = visible;
+  }
+  function addTickerItem(name, feil, sted) {
+    const scroll = document.getElementById('tickerScroll');
+    for (let i = 0; i < 2; i++) {
+      const span = document.createElement('span');
+      span.textContent = name + ' — ' + feil + ' · ' + sted;
+      scroll.appendChild(span);
+    }
+  }
+  // ===== AUTH =====
+  let currentUser = null;
+
+  function getUsers() {
+    try { return JSON.parse(localStorage.getItem('rb_users') || '{}'); } catch { return {}; }
+  }
+  function saveUsers(u) { localStorage.setItem('rb_users', JSON.stringify(u)); }
+  function saveSession(user) {
+    localStorage.setItem('rb_session', JSON.stringify(user));
+    currentUser = user;
+    updateAuthUI();
+  }
+  function loadSession() {
+    try {
+      const s = localStorage.getItem('rb_session');
+      if (s) { currentUser = JSON.parse(s); updateAuthUI(); }
+    } catch {}
+  }
+  function updateAuthUI() {
+    if (currentUser) {
+      document.getElementById('authLoggedOut').style.display = 'none';
+      document.getElementById('authLoggedIn').style.display = 'flex';
+      const initials = currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      document.getElementById('userAvatar').textContent = initials;
+      document.getElementById('userName').textContent = currentUser.name;
+    } else {
+      document.getElementById('authLoggedOut').style.display = 'flex';
+      document.getElementById('authLoggedIn').style.display = 'none';
+    }
+  }
+  function logout() {
+    localStorage.removeItem('rb_session');
+    currentUser = null;
+    updateAuthUI();
+  }
+
+  function openAuthModal(type) {
+    if (type === 'login') {
+      document.getElementById('loginError').classList.remove('show');
+      document.getElementById('loginSuccess').classList.remove('show');
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+      openModal('loginModal');
+    } else {
+      document.getElementById('registerError').classList.remove('show');
+      document.getElementById('regName').value = '';
+      document.getElementById('regEmail').value = '';
+      document.getElementById('regPassword').value = '';
+      document.getElementById('regPassword2').value = '';
+      openModal('registerModal');
+    }
+  }
+
+  function switchAuth(to) {
+    closeModal('loginModal');
+    closeModal('registerModal');
+    setTimeout(() => openAuthModal(to), 50);
+  }
+
+  function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const pw    = document.getElementById('loginPassword').value;
+    const users = getUsers();
+    if (!users[email] || users[email].password !== btoa(pw)) {
+      document.getElementById('loginError').classList.add('show');
+      return;
+    }
+    document.getElementById('loginError').classList.remove('show');
+    saveSession({ name: users[email].name, email });
+    closeModal('loginModal');
+  }
+
+
+  function togglePw(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else { inp.type = 'password'; btn.textContent = '👁'; }
+  }
+
+  // ===== REGISTER TYPE =====
+  let regType = 'privat';
+  function switchRegType(type, btn) {
+    regType = type;
+    document.querySelectorAll('#regTypePrivat, #regTypeBedrift').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('bedriftFields').style.display = type === 'bedrift' ? '' : 'none';
+  }
+
+  function doRegister() {
+    const name  = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim().toLowerCase();
+    const pw    = document.getElementById('regPassword').value;
+    const pw2   = document.getElementById('regPassword2').value;
+    const errEl = document.getElementById('registerError');
+
+    if (!name || !email || pw.length < 6 || pw !== pw2) {
+      if (pw !== pw2) errEl.textContent = 'Passordene stemmer ikke overens.';
+      else if (pw.length < 6) errEl.textContent = 'Passordet må være minst 6 tegn.';
+      else errEl.textContent = 'Fyll ut alle felt.';
+      errEl.classList.add('show'); return;
+    }
+    const users = getUsers();
+    if (users[email]) {
+      errEl.textContent = 'Det finnes allerede en konto med denne e-posten.';
+      errEl.classList.add('show'); return;
+    }
+    errEl.classList.remove('show');
+    users[email] = { name, password: btoa(pw), type: regType, verified: false };
+    saveUsers(users);
+    // Show email confirmation modal instead of logging in immediately
+    closeModal('registerModal');
+    document.getElementById('confirmEmailAddr').textContent = email;
+    openModal('emailConfirmModal');
+    // In a real app we'd send an email - here we auto-verify after showing the modal
+    setTimeout(() => {
+      users[email].verified = true;
+      saveUsers(users);
+      saveSession({ name, email, type: regType });
+    }, 1000);
+  }
+
+  // ===== OM OSS =====
+  function openOmOss() { openModal('omOssModal'); }
+
+  // ===== KONTAKT =====
+  function openKontakt() { openModal('kontaktModal'); }
+  function sendKontakt() {
+    const emne = document.getElementById('kontaktEmne').value.trim();
+    const melding = document.getElementById('kontaktMelding').value.trim();
+    if (!melding) return;
+    // In real app: send email. Here just close and show thank you
+    document.getElementById('kontaktEmne').value = '';
+    document.getElementById('kontaktMelding').value = '';
+    closeModal('kontaktModal');
+    alert('Takk! Vi har mottatt meldingen din og svarer innen 24 timer.');
+  }
+
+  // ===== BILTRANSPORT =====
+  function openBiltransport() { openModal('biltransportModal'); }
+  function sendBiltransport() {
+    const fra = document.getElementById('btFra').value.trim();
+    const til = document.getElementById('btTil').value.trim();
+    const type = document.getElementById('btType').value;
+    const epost = document.getElementById('btEpost').value.trim();
+    if (!fra || !til || !type || !epost) {
+      document.getElementById('btError').classList.add('show'); return;
+    }
+    document.getElementById('btError').classList.remove('show');
+    closeModal('biltransportModal');
+    openModal('btOkModal');
+  }
+
+  // ===== BEDRIFT =====
+  function openBedriftReg() { openModal('bedriftModal'); }
+  function sendBedriftReg() {
+    const navn = document.getElementById('bregNavn').value.trim();
+    const orgnr = document.getElementById('bregOrgnr').value.trim();
+    const kontakt = document.getElementById('bregKontakt').value.trim();
+    const email = document.getElementById('bregEmail').value.trim();
+    const tlf = document.getElementById('bregTlf').value.trim();
+    const bransje = document.getElementById('bregBransje').value;
+    if (!navn || !orgnr || !kontakt || !email || !tlf || !bransje) {
+      document.getElementById('bregError').classList.add('show'); return;
+    }
+    document.getElementById('bregError').classList.remove('show');
+    closeModal('bedriftModal');
+    openModal('bedriftOkModal');
+  }
+
+  // ===== ADMIN PANEL =====
+  function openAdminPanel() {
+    if (!currentUser) { openAuthModal('login'); return; }
+    document.getElementById('adminBedriftNavn').textContent = currentUser.name + ' — Bedriftsadmin';
+    switchAdminTab('annonser', document.querySelector('[onclick*="switchAdminTab"]'));
+    openModal('adminModal');
+  }
+  function switchAdminTab(tab, btn) {
+    if (!btn) return;
+    document.querySelectorAll('#adminModal .minside-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const content = document.getElementById('adminContent');
+    if (tab === 'annonser') {
+      content.innerHTML = '<div class="minside-empty">Ingen annonser ennå. Bruk «Ny annonse»-fanen for å publisere.</div>';
+    } else if (tab === 'ny') {
+      content.innerHTML = `
+        <div style="color:var(--text2);font-size:0.85rem;margin-bottom:1rem;">Bruk skjemaet under for å legge inn en ny bedriftsannonse.</div>
+        <button class="submit-btn" onclick="closeModal('adminModal');openPostModal()">➕ Åpne annonseskjema</button>`;
+    } else {
+      content.innerHTML = `
+        <div class="form-group"><label>Bedriftsnavn</label><input type="text" value="${currentUser?.name||''}" disabled></div>
+        <div class="form-group"><label>E-post</label><input type="email" value="${currentUser?.email||''}" disabled></div>
+        <div style="color:var(--text3);font-size:0.78rem;margin-top:0.5rem;">Kontakt samikjan1991@gmail.com for å endre bedriftsinformasjon.</div>`;
+    }
+  }
+
+  // ===== CHATBOT =====
+  let chatOpen = false;
+  const chatKB = [
+    { q: ['hei','hallo','heisann','god dag'], a: 'Hei! Velkommen til Reppobjekt support 👋 Hvordan kan jeg hjelpe deg?' },
+    { q: ['legge ut','annonse','selge','publiser'], a: 'For å legge ut en annonse: Logg inn → Klikk «+ Legg ut annonse» → Fyll inn info og bilder → Publiser! 🚗' },
+    { q: ['pris','kost','gratis'], a: 'Det er gratis å legge ut annonser på Reppobjekt! Vi tar ingen provisjon. 🎉' },
+    { q: ['biltransport','transport','hente','levere'], a: 'Du kan bestille biltransport via «Biltransport»-lenken i bunnen av siden. Vi kobler deg med transportører i hele Norge 🚚' },
+    { q: ['bedrift','firma','admin','organisasjon'], a: 'For bedriftsregistrering, klikk «Bedriftsregistrering» i bunnen av siden. Du får eget adminpanel og ubegrenset annonser 🏢' },
+    { q: ['favoritt','hjerte'], a: 'Klikk ♡-ikonet på et kort for å legge en annonse til i favoritter. Du finner dine favoritter under «Min side» 💙' },
+    { q: ['ai','pris','estimat','beregn','reparasjon'], a: 'Priskalkulator lar deg estimere reparasjonskostnader. Finn knappen øverst på siden eller inne i en annonse 🤖' },
+    { q: ['kontakt','epost','e-post','hjelp'], a: 'Du kan kontakte oss på samikjan1991@gmail.com eller via «Kontakt oss» i bunnen. Vi svarer innen 24 timer 📧' },
+    { q: ['registrere','konto','bruker','logg inn'], a: 'Klikk «Logg inn» øverst til høyre for å opprette konto eller logge inn. Det er helt gratis!' },
+    { q: ['rabatt','deler','spare'], a: 'Vi har avtaler med Autodoc, Bilxtra og Reservedeler24 for rabatt på bildeler. Klikk «Se tilbud» i det gule banneret 🛒' },
+  ];
+  const chatGreeting = 'Hei! Jeg er Reppobjekt-boten 🤖 Still meg et spørsmål om siden, annonser, biltransport eller registrering!';
+
+  function toggleChat() {
+    const panel = document.getElementById('chatPanel');
+    chatOpen = !chatOpen;
+    panel.style.display = chatOpen ? 'flex' : 'none';
+    panel.style.flexDirection = 'column';
+    if (chatOpen && document.getElementById('chatMessages').children.length === 0) {
+      appendChatMsg(chatGreeting, 'bot');
+    }
+    if (chatOpen) setTimeout(() => document.getElementById('chatInput').focus(), 50);
+  }
+
+  function appendChatMsg(text, who) {
+    const msgs = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.style.cssText = who === 'bot'
+      ? 'background:var(--surface2);border:1px solid var(--border);border-radius:10px 10px 10px 3px;padding:0.55rem 0.75rem;max-width:90%;align-self:flex-start;line-height:1.5;'
+      : 'background:var(--accent);color:white;border-radius:10px 10px 3px 10px;padding:0.55rem 0.75rem;max-width:90%;align-self:flex-end;line-height:1.5;';
+    div.textContent = text;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  async function sendChat() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+    appendChatMsg(msg, 'user');
+
+    // Check local KB first
+    const lower = msg.toLowerCase();
+    const match = chatKB.find(entry => entry.q.some(kw => lower.includes(kw)));
+    if (match) {
+      setTimeout(() => appendChatMsg(match.a, 'bot'), 400);
+      return;
+    }
+
+    // Fallback to Claude API
+    appendChatMsg('Henter svar…', 'bot');
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 300,
+          system: 'Du er en norsk kundeservicebot for Reppobjekt — en markedsplass for reparasjonsobjekter. Svar kort (maks 2 setninger), på norsk, vennlig og hjelpsomt. Reppobjekt lar folk kjøpe/selge skadde biler, MC, båter og elektronikk billig. Kontakt: samikjan1991@gmail.com',
+          messages: [{ role: 'user', content: msg }]
+        })
+      });
+      const data = await res.json();
+      const msgs = document.getElementById('chatMessages');
+      const last = msgs.lastChild;
+      if (last) last.remove(); // remove "Henter svar…"
+      const answer = data.content?.map(b=>b.text||'').join('') || 'Beklager, prøv igjen.';
+      appendChatMsg(answer, 'bot');
+    } catch {
+      const msgs = document.getElementById('chatMessages');
+      if (msgs.lastChild) msgs.lastChild.remove();
+      appendChatMsg('Beklager, jeg kunne ikke hente svar akkurat nå. Kontakt oss på samikjan1991@gmail.com', 'bot');
+    }
+  }
+
+  // ===== UPDATE ESC + MODAL CLOSE LISTS =====
+
+
+  function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchClear').style.display = 'none';
+    applyFilters();
+  }
+
+  // ===== PANELS =====
+  function openPanel(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closePanel(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // ===== FAVOURITES =====
+  function getFavs() {
+    try { return JSON.parse(localStorage.getItem('rb_favs') || '[]'); } catch { return []; }
+  }
+  function saveFavs(f) { localStorage.setItem('rb_favs', JSON.stringify(f)); }
+
+  function getCardId(card) {
+    const make = card.querySelector('.card-make')?.textContent || '';
+    const model = card.querySelector('.card-model')?.textContent || '';
+    return (make + '|' + model).trim();
+  }
+
+  function toggleFav(event, btn) {
+    event.stopPropagation();
+    const card = btn.closest('.card');
+    const id = getCardId(card);
+    let favs = getFavs();
+    if (favs.includes(id)) {
+      favs = favs.filter(f => f !== id);
+      btn.classList.remove('active');
+      btn.textContent = '♡';
+    } else {
+      favs.push(id);
+      btn.classList.add('active');
+      btn.textContent = '♥';
+      // Pulse animation
+      btn.style.transform = 'scale(1.4)';
+      setTimeout(() => btn.style.transform = '', 200);
+    }
+    saveFavs(favs);
+  }
+
+  function syncFavButtons() {
+    const favs = getFavs();
+    document.querySelectorAll('.card').forEach(card => {
+      const id = getCardId(card);
+      const btn = card.querySelector('.fav-btn');
+      if (btn) {
+        if (favs.includes(id)) { btn.classList.add('active'); btn.textContent = '♥'; }
+        else { btn.classList.remove('active'); btn.textContent = '♡'; }
+      }
+    });
+  }
+
+  // ===== DETAIL MODAL =====
+  let detailCard = null;
+  let detailImages = [];
+  let detailImgIdx = 0;
+
+  function openDetailModal(e, card) {
+    // Don't open if clicking buttons
+    if (e && e.target && e.target.closest('button')) return;
+    detailCard = card;
+    detailImages = [];
+    detailImgIdx = 0;
+
+    const make   = card.querySelector('.card-make')?.textContent || '';
+    const model  = card.querySelector('.card-model')?.textContent || '';
+    const prob   = card.querySelector('.card-problem')?.textContent || '';
+    const price  = card.dataset.price || '0';
+    const loc    = card.querySelector('.card-location')?.textContent || '';
+    const badges = card.querySelector('.card-badges')?.innerHTML || '';
+    const priceNote = card.querySelector('.card-price-note')?.textContent || '';
+
+    document.getElementById('detailTitle').textContent = make;
+    document.getElementById('detailLocation').textContent = loc;
+    document.getElementById('detailPrice').textContent = Number(price).toLocaleString('nb-NO') + ' kr';
+    document.getElementById('detailDesc').textContent = prob;
+
+    // Images
+    const imgArea = document.getElementById('detailImgArea');
+    const thumbRow = document.getElementById('detailThumbs');
+    imgArea.innerHTML = '';
+    thumbRow.innerHTML = '';
+
+    const cardImgs = card.querySelectorAll('.card-img-placeholder img');
+    if (cardImgs.length > 0) {
+      cardImgs.forEach((img, i) => detailImages.push(img.src));
+      renderDetailImages();
+    } else {
+      const emoji = card.querySelector('.card-img-placeholder')?.textContent?.trim() || '📦';
+      imgArea.innerHTML = `<span style="font-size:5rem;">${emoji}</span>`;
+    }
+
+    // Info grid
+    const parts = model.split(' · ');
+    const infoItems = [
+      { label: 'Modell', value: parts[0] || '—' },
+      { label: 'Årsmodell', value: parts[1] || '—' },
+      { label: 'Km/Timer', value: parts[2] || '—' },
+      { label: 'Prisnotat', value: priceNote || '—' },
+    ];
+    document.getElementById('detailInfoGrid').innerHTML = infoItems
+      .filter(i => i.value !== '—')
+      .map(i => `<div class="detail-info-item"><div class="detail-info-label">${i.label}</div><div class="detail-info-value">${i.value}</div></div>`)
+      .join('');
+
+    // Fav button state
+    const favs = getFavs();
+    const cardId = getCardId(card);
+    const dfav = document.getElementById('detailFavBtn');
+    if (favs.includes(cardId)) { dfav.classList.add('active'); dfav.textContent = '♥ Favoritt'; }
+    else { dfav.classList.remove('active'); dfav.textContent = '♡ Favoritt'; }
+
+    // Action buttons
+    const pNum = Number(price);
+    const adName = make + ' ' + parts[0];
+    document.getElementById('detailPrutBtn').onclick = () => { closeModal('detailModal'); openPrutModal(null, adName, pNum); };
+    document.getElementById('detailKjopBtn').onclick = () => { closeModal('detailModal'); openKjopModal(adName, pNum); };
+
+    openModal('detailModal');
+  }
+
+  function renderDetailImages() {
+    const imgArea = document.getElementById('detailImgArea');
+    const thumbRow = document.getElementById('detailThumbs');
+    imgArea.innerHTML = '';
+    thumbRow.innerHTML = '';
+
+    if (detailImages.length === 0) return;
+
+    const mainImg = document.createElement('img');
+    mainImg.src = detailImages[detailImgIdx];
+    mainImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:10px;';
+    imgArea.appendChild(mainImg);
+
+    if (detailImages.length > 1) {
+      const prev = document.createElement('button');
+      prev.className = 'detail-img-nav prev';
+      prev.textContent = '‹';
+      prev.onclick = (e) => { e.stopPropagation(); detailImgIdx = (detailImgIdx - 1 + detailImages.length) % detailImages.length; renderDetailImages(); };
+      const next = document.createElement('button');
+      next.className = 'detail-img-nav next';
+      next.textContent = '›';
+      next.onclick = (e) => { e.stopPropagation(); detailImgIdx = (detailImgIdx + 1) % detailImages.length; renderDetailImages(); };
+      const counter = document.createElement('div');
+      counter.className = 'detail-img-counter';
+      counter.textContent = `${detailImgIdx + 1} / ${detailImages.length}`;
+      imgArea.appendChild(prev);
+      imgArea.appendChild(next);
+      imgArea.appendChild(counter);
+
+      detailImages.forEach((src, i) => {
+        const thumb = document.createElement('img');
+        thumb.src = src;
+        thumb.className = 'detail-thumb' + (i === detailImgIdx ? ' active' : '');
+        thumb.onclick = () => { detailImgIdx = i; renderDetailImages(); };
+        thumbRow.appendChild(thumb);
+      });
+    }
+  }
+
+  function toggleDetailFav() {
+    if (!detailCard) return;
+    const id = getCardId(detailCard);
+    let favs = getFavs();
+    const dfav = document.getElementById('detailFavBtn');
+    const cardBtn = detailCard.querySelector('.fav-btn');
+    if (favs.includes(id)) {
+      favs = favs.filter(f => f !== id);
+      dfav.classList.remove('active'); dfav.textContent = '♡ Favoritt';
+      if (cardBtn) { cardBtn.classList.remove('active'); cardBtn.textContent = '♡'; }
+    } else {
+      favs.push(id);
+      dfav.classList.add('active'); dfav.textContent = '♥ Favoritt';
+      if (cardBtn) { cardBtn.classList.add('active'); cardBtn.textContent = '♥'; }
+    }
+    saveFavs(favs);
+  }
+
+  // ===== MIN SIDE =====
+  let minSideTab = 'fav';
+  function openMinSide() {
+    if (!currentUser) { openAuthModal('login'); return; }
+    document.getElementById('minSideUser').textContent = currentUser.email;
+    renderMinSide();
+    openModal('minSideModal');
+  }
+  function switchMinSide(tab, btn) {
+    minSideTab = tab;
+    document.querySelectorAll('.minside-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderMinSide();
+  }
+  function renderMinSide() {
+    const content = document.getElementById('minSideContent');
+    if (minSideTab === 'fav') {
+      const favs = getFavs();
+      if (favs.length === 0) { content.innerHTML = '<div class="minside-empty">Du har ingen favoritter ennå.<br>Klikk ♡ på en annonse for å lagre den her.</div>'; return; }
+      const cards = [...document.querySelectorAll('.card')];
+      const matched = cards.filter(c => favs.includes(getCardId(c)));
+      if (matched.length === 0) { content.innerHTML = '<div class="minside-empty">Ingen favorittannonser funnet.</div>'; return; }
+      content.innerHTML = '<div class="minside-card-list">' + matched.map(c => {
+        const make = c.querySelector('.card-make')?.textContent || '';
+        const model = c.querySelector('.card-model')?.textContent || '';
+        const price = Number(c.dataset.price||0).toLocaleString('nb-NO');
+        const emoji = c.querySelector('.card-img-placeholder')?.textContent?.trim()?.slice(0,2) || '📦';
+        const loc = c.querySelector('.card-location')?.textContent || '';
+        return `<div class="minside-item" onclick="closeModal('minSideModal');openDetailModal(${[...document.querySelectorAll('.card')].indexOf(c)}dummy)">
+          <div class="minside-item-emoji">${emoji}</div>
+          <div class="minside-item-info"><div class="minside-item-name">${make}</div><div class="minside-item-sub">${model} · ${loc}</div></div>
+          <div class="minside-item-price">${price} kr</div>
+        </div>`;
+      }).join('') + '</div>';
+      // Fix onclick to pass actual card element
+      content.querySelectorAll('.minside-item').forEach((item, i) => {
+        const card = matched[i];
+        item.onclick = () => { closeModal('minSideModal'); setTimeout(() => openDetailModal(card), 50); };
+      });
+    } else {
+      // Mine annonser - for demo show placeholder
+      content.innerHTML = '<div class="minside-empty">Du har ingen aktive annonser.<br>Klikk «+ Legg ut annonse» for å publisere.</div>';
+    }
+  }
+
+  // ===== AI PRISBEREGNER =====
+  function openAIPrisModal() {
+    document.getElementById('aiError').classList.remove('show');
+    document.getElementById('aiResult').classList.remove('show');
+    document.getElementById('aiLoading').style.display = 'none';
+    openModal('aiModal');
+  }
+  function openAIPrisBtnFromDetail() {
+    closeModal('detailModal');
+    if (detailCard) {
+      const make = detailCard.querySelector('.card-make')?.textContent || '';
+      const model = detailCard.querySelector('.card-model')?.textContent || '';
+      const prob = detailCard.querySelector('.card-problem')?.textContent || '';
+      setTimeout(() => {
+        document.getElementById('aiMerke').value = make;
+        const parts = model.split(' · ');
+        document.getElementById('aiModell').value = parts[0] || '';
+        document.getElementById('aiAar').value = parts[1] || '';
+        document.getElementById('aiKm').value = parts[2] || '';
+        document.getElementById('aiFeil').value = prob;
+        openAIPrisModal();
+      }, 100);
+    } else { openAIPrisModal(); }
+  }
+
+  async function runAIPris() {
+    const merke = document.getElementById('aiMerke').value.trim();
+    const feil  = document.getElementById('aiFeil').value.trim();
+    if (!merke || !feil) { document.getElementById('aiError').classList.add('show'); return; }
+    document.getElementById('aiError').classList.remove('show');
+    document.getElementById('aiResult').classList.remove('show');
+    document.getElementById('aiLoading').style.display = 'block';
+
+    const modell = document.getElementById('aiModell').value.trim();
+    const aar    = document.getElementById('aiAar').value.trim();
+    const km     = document.getElementById('aiKm').value.trim();
+
+    const prompt = `Du er en norsk bilmekaniker og prisekspert. Estimer reparasjonskostnaden for følgende objekt:
+Merke: ${merke}
+Modell: ${modell || 'ukjent'}
+Årsmodell: ${aar || 'ukjent'}
+Kilometerstand: ${km || 'ukjent'}
+Feil/Problem: ${feil}
+
+Svar BARE med et JSON-objekt (ingen markdown, ingen forklaring utenfor JSON):
+{
+  "prisFra": 15000,
+  "prisTil": 25000,
+  "valuta": "NOK",
+  "sammendrag": "Kort forklaring på 2-3 setninger om hva reparasjonen innebærer og hvorfor kostnaden er slik.",
+  "tips": "Ett praktisk tips til kjøperen."
+}`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 500,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.map(b => b.text||'').join('') || '';
+      const clean = text.replace(/```json|```/g,'').trim();
+      let parsed;
+      try { parsed = JSON.parse(clean); }
+      catch { parsed = null; }
+
+      document.getElementById('aiLoading').style.display = 'none';
+      const resultEl = document.getElementById('aiResult');
+      if (parsed && parsed.prisFra) {
+        document.getElementById('aiResultPrice').textContent =
+          Number(parsed.prisFra).toLocaleString('nb-NO') + ' – ' + Number(parsed.prisTil).toLocaleString('nb-NO') + ' kr';
+        document.getElementById('aiResultText').innerHTML =
+          `<p>${parsed.sammendrag}</p>${parsed.tips ? '<p style="margin-top:0.5rem;color:var(--accent2);">💡 ' + parsed.tips + '</p>' : ''}`;
+      } else {
+        document.getElementById('aiResultPrice').textContent = 'Kunne ikke beregne';
+        document.getElementById('aiResultText').textContent = text.slice(0, 300);
+      }
+      resultEl.classList.add('show');
+    } catch (err) {
+      document.getElementById('aiLoading').style.display = 'none';
+      document.getElementById('aiError').textContent = 'Feil ved API-kall. Prøv igjen.';
+      document.getElementById('aiError').classList.add('show');
+    }
+  }
+
+  // ===== RABATT =====
+  function openRabattInfo() { openModal('rabattModal'); }
+
+  // Init: sync favs on load
+  syncFavButtons();
+
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      ['postModal','prutModal','prutOkModal','kjopModal','kjopOkModal','loginModal','registerModal',
+       'detailModal','minSideModal','aiModal','rabattModal',
+'kontaktModal','biltransportModal','btOkModal',
+       'bedriftModal','bedriftOkModal','adminModal','emailConfirmModal','reparasjonModal','verktoyModal'].forEach(id => closeModal(id));
+      ['notifPanel','msgPanel'].forEach(id => closePanel(id));
+    }
+  });
+
+
+  function openReparasjonsmanualer() { openModal('reparasjonModal'); }
+  function openBestillVerktoy() { openModal('verktoyModal'); }
+
+  // ===== THEME TOGGLE =====
+  function toggleTheme() {
+    const body = document.body;
+    const btn = document.getElementById('themeBtn');
+    body.classList.toggle('light');
+    btn.textContent = body.classList.contains('light') ? '🌙' : '☀️';
+    localStorage.setItem('rb_theme', body.classList.contains('light') ? 'light' : 'dark');
+  }
+  (function() {
+    if (localStorage.getItem('rb_theme') === 'light') {
+      document.body.classList.add('light');
+      const btn = document.getElementById('themeBtn');
+      if (btn) btn.textContent = '☀️';
+    }
+  })();
+
+  // ===== MOBILE MENU =====
+  function openMobileMenu() {
+    document.getElementById('mobileMenu').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMobileMenu() {
+    document.getElementById('mobileMenu').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function mobileSwitchTab(tab, btn) {
+    activeTab = tab;
+    document.querySelectorAll('.mobile-cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // Also sync desktop tabs
+    document.querySelectorAll('.type-tab').forEach(b => b.classList.remove('active'));
+    applyFilters();
+    closeMobileMenu();
+    document.getElementById('carGrid').scrollIntoView({behavior:'smooth'});
+  }
+
+  // ===== SHARE AD =====
+  function shareAd(e, name) {
+    e.stopPropagation();
+    const url = window.location.href;
+    const text = 'Sjekk ut denne annonsen på Reppobjekt: ' + name;
+    if (navigator.share) {
+      navigator.share({ title: name, text: text, url: url });
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Lenke kopiert! Del den med hvem du vil.');
+      });
+    }
+  }
+
+  // ===== SEVERITY FILTER =====
+  let activeSevFilters = new Set();
+  function toggleSev(sev, btn) {
+    if (activeSevFilters.has(sev)) {
+      activeSevFilters.delete(sev);
+      btn.classList.remove('active-' + sev);
+    } else {
+      activeSevFilters.add(sev);
+      btn.classList.add('active-' + sev);
+    }
+    applyFilters();
+  }
+
+  // ===== STATS COUNTER ANIMATION =====
+  function animateCount(el, target) {
+    let current = 0;
+    const step = Math.ceil(target / 30);
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = current;
+      if (current >= target) clearInterval(timer);
+    }, 40);
+  }
+  setTimeout(() => {
+    const statEl = document.getElementById('statAds');
+    if (statEl) animateCount(statEl, 15);
+  }, 500);
+
+  // Event delegation for kortklikk
+  document.getElementById('carGrid').addEventListener('click', function(e) {
+    var card = e.target.closest('.card');
+    if (!card) return;
+    if (e.target.closest('button')) return;
+    openDetailModal(e, card);
+  });
+
+  // Last sesjon
+  loadSession();
+
+</script>
+<!-- ===== MOBILE MENU ===== -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-header">
+    <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;">Repp<span style="color:var(--accent);">objekt</span></div>
+    <button class="mobile-menu-close" onclick="closeMobileMenu()">✕</button>
+  </div>
+  <div style="font-size:0.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.75rem;">Kategorier</div>
+  <button class="mobile-cat-btn active" onclick="mobileSwitchTab('alle',this)">🔍 Alle<span class="mobile-cat-count">15</span></button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('bil',this)">🚗 Biler<span class="mobile-cat-count">3</span></button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('veteran',this)">🏎️ Veteranbil</button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('bobil',this)">🚐 Bobil</button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('bat',this)">⛵ Båt</button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('mc',this)">🏍️ Motorsykkel<span class="mobile-cat-count">2</span></button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('moped',this)">🛵 Moped & Scooter</button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('mopedbil',this)">🚗 Mopedbil</button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('atv',this)">🛻 ATV</button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('snoscooter',this)">❄️ Snøscooter</button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('tung',this)">🚛 Tyngre kjøretøy<span class="mobile-cat-count">2</span></button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('elektronikk',this)">💻 Elektronikk<span class="mobile-cat-count">2</span></button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('sykkel',this)">🚲 Sykkel<span class="mobile-cat-count">2</span></button>
+  <button class="mobile-cat-btn" onclick="mobileSwitchTab('verktoy',this)">🔧 Verktøy<span class="mobile-cat-count">3</span></button>
+</div>
+
+</body>
+</html>
