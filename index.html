@@ -2258,9 +2258,23 @@ body.light header { background: rgba(255,255,255,0.92); border-bottom-color: rgb
       <div style="font-size:1.3rem;">🤖</div>
       <div>
         <div style="font-weight:700;font-size:0.9rem;color:white;">Reppobjekt Support</div>
-        <div style="font-size:0.72rem;color:rgba(255,255,255,0.8);">● Online nå</div>
+        <div id="aiStatusLine" style="font-size:0.72rem;color:rgba(255,255,255,0.8);">● Online nå</div>
       </div>
       <button onclick="toggleChat()" style="margin-left:auto;background:none;border:none;color:white;cursor:pointer;font-size:1.1rem;">✕</button>
+    </div>
+    <div id="aiBar" style="padding:0.6rem 1rem;border-bottom:1px solid var(--border);font-size:0.75rem;color:var(--text2);line-height:1.4;">
+      <button id="aiActivateBtn" onclick="activateLocalAI()" style="
+        width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);
+        border-radius:8px;padding:0.45rem 0.6rem;cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.78rem;">
+        ⚡ Aktiver AI-chat <span id="aiSizeHint" style="color:var(--text3);"></span>
+      </button>
+      <div id="aiProgressWrap" style="display:none;">
+        <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-bottom:0.35rem;">
+          <div id="aiProgressBar" style="height:100%;width:0;background:var(--accent);transition:width 0.3s;"></div>
+        </div>
+        <div id="aiProgressText"></div>
+      </div>
+      <div id="aiNote" style="margin-top:0.35rem;color:var(--text3);font-size:0.7rem;">AI-en kjører på din egen enhet. Ingenting sendes til en server.</div>
     </div>
     <div id="chatMessages" style="padding:1rem;display:flex;flex-direction:column;gap:0.7rem;max-height:280px;overflow-y:auto;font-size:0.83rem;"></div>
     <div style="padding:0.7rem;border-top:1px solid var(--border);display:flex;gap:0.5rem;">
@@ -3170,6 +3184,7 @@ body.light header { background: rgba(255,255,255,0.92); border-bottom-color: rgb
     div.textContent = text;
     msgs.appendChild(div);
     msgs.scrollTop = msgs.scrollHeight;
+    return div;
   }
 
   async function sendChat() {
@@ -3179,7 +3194,10 @@ body.light header { background: rgba(255,255,255,0.92); border-bottom-color: rgb
     input.value = '';
     appendChatMsg(msg, 'user');
 
-    // Check local KB first
+    // The local AI knows the KB facts through its system prompt, so it answers everything once loaded
+    if (aiState === 'ready') return askLocalAI(msg);
+
+    // Otherwise answer from the keyword KB
     const lower = msg.toLowerCase();
     const match = chatKB.find(entry => entry.q.some(kw => lower.includes(kw)));
     if (match) {
@@ -3187,30 +3205,127 @@ body.light header { background: rgba(255,255,255,0.92); border-bottom-color: rgb
       return;
     }
 
-    // Fallback to Claude via our server (/api/chat keeps the API key secret)
-    chatHistory.push({ role: 'user', content: msg });
-    appendChatMsg('Henter svar…', 'bot');
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: chatHistory.slice(-10) })
-      });
-      const data = await res.json();
-      const msgs = document.getElementById('chatMessages');
-      const last = msgs.lastChild;
-      if (last) last.remove(); // remove "Henter svar…"
-      if (!res.ok) throw new Error(data.error);
-      const answer = data.text || 'Beklager, prøv igjen.';
-      chatHistory.push({ role: 'assistant', content: answer });
-      appendChatMsg(answer, 'bot');
-    } catch {
-      chatHistory.pop();
-      const msgs = document.getElementById('chatMessages');
-      if (msgs.lastChild) msgs.lastChild.remove();
-      appendChatMsg('Beklager, jeg kunne ikke hente svar akkurat nå. Kontakt oss på samikjan1991@gmail.com', 'bot');
+    if (aiState === 'loading') {
+      appendChatMsg('AI-en lastes fortsatt ned — prøv igjen om litt, eller kontakt oss på samikjan1991@gmail.com', 'bot');
+    } else {
+      appendChatMsg('Det vet jeg ikke svaret på ennå. Aktiver AI-chat øverst for å stille friere spørsmål, eller kontakt oss på samikjan1991@gmail.com 📧', 'bot');
     }
   }
+
+  // ===== LOCAL AI (WebLLM, runs in the visitor's browser — no server, no API key) =====
+  const WEBLLM_URL = 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.85/+esm';
+  const isMobile = navigator.userAgentData?.mobile ?? /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  // Phones get the smaller model; desktops get the 1.5B one, which writes much better Norwegian.
+  const aiModelSize = isMobile ? '0.5B' : '1.5B';
+  const aiDownloadHint = isMobile ? '(laster ned ~400 MB første gang)' : '(laster ned ~1 GB første gang)';
+  let aiEngine = null;
+  let aiState = 'off'; // off | loading | ready | unsupported | error
+
+  const aiSystemPrompt = 'Du er kundeservice-assistenten for Reppobjekt, en norsk markedsplass for reparasjonsobjekter: ' +
+    'folk kjøper og selger skadde biler, MC, båter, verktøy og elektronikk billig og reparerer dem selv. ' +
+    'Svar alltid på norsk, kort (maks 3 setninger), vennlig og konkret.\n' +
+    'Regler:\n' +
+    '- Skriv ALDRI lenker eller nettadresser.\n' +
+    '- Spørsmål om siden: svar bare med faktaene under. Ikke finn på priser, regler eller funksjoner.\n' +
+    '- Spørsmål om reparasjon: gi generelle, praktiske råd (verktøy, vanskelighetsgrad, sikkerhet). ' +
+    'Det er lov å reparere selv — det er hele poenget med Reppobjekt.\n' +
+    '- Hvis du ikke vet svaret, be brukeren kontakte samikjan1991@gmail.com.\n\nFakta om siden:\n' +
+    chatKB.map(e => '- ' + e.a).join('\n');
+
+  function setAIStatus(text) {
+    document.getElementById('aiStatusLine').textContent = text;
+  }
+
+  function aiStorage(set) {
+    try {
+      if (set === undefined) return localStorage.getItem('reppobjektAI') === '1';
+      localStorage.setItem('reppobjektAI', set ? '1' : '0');
+    } catch { return false; }
+  }
+
+  async function pickAIModel() {
+    if (!navigator.gpu) return null;
+    const adapter = await navigator.gpu.requestAdapter().catch(() => null);
+    if (!adapter) return null;
+    const precision = adapter.features.has('shader-f16') ? 'q4f16_1' : 'q4f32_1';
+    return `Qwen2.5-${aiModelSize}-Instruct-${precision}-MLC`;
+  }
+
+  async function activateLocalAI() {
+    if (aiState === 'loading' || aiState === 'ready') return;
+    const btn = document.getElementById('aiActivateBtn');
+    const wrap = document.getElementById('aiProgressWrap');
+    const bar = document.getElementById('aiProgressBar');
+    const text = document.getElementById('aiProgressText');
+
+    const model = await pickAIModel();
+    if (!model) {
+      aiState = 'unsupported';
+      btn.style.display = 'none';
+      document.getElementById('aiNote').textContent =
+        'AI-chat krever en nettleser med WebGPU (f.eks. Chrome eller Edge på PC). Du kan fortsatt stille vanlige spørsmål her.';
+      return;
+    }
+
+    aiState = 'loading';
+    btn.style.display = 'none';
+    wrap.style.display = 'block';
+    text.textContent = 'Starter…';
+    setAIStatus('● Laster AI…');
+    try {
+      const webllm = await import(WEBLLM_URL);
+      aiEngine = await webllm.CreateMLCEngine(model, {
+        initProgressCallback: p => {
+          bar.style.width = Math.round((p.progress || 0) * 100) + '%';
+          text.textContent = Math.round((p.progress || 0) * 100) + '% — ' + (p.progress < 1 ? 'laster ned modellen (bare første gang)' : 'gjør klar');
+        }
+      });
+      aiState = 'ready';
+      aiStorage(true);
+      document.getElementById('aiBar').style.display = 'none';
+      setAIStatus('● AI aktiv (på din enhet)');
+      appendChatMsg('AI-chat er klar! Spør meg om kjøp, salg og reparasjon 🔧 (AI-en er liten og kan ta feil — dobbeltsjekk viktige råd.)', 'bot');
+    } catch (err) {
+      console.error('Local AI failed to load', err);
+      aiState = 'error';
+      aiEngine = null;
+      wrap.style.display = 'none';
+      btn.style.display = 'block';
+      btn.firstChild.textContent = '⚡ Prøv å aktivere AI-chat igjen ';
+      document.getElementById('aiNote').textContent = 'Kunne ikke laste AI-en (for lite minne eller nettverksfeil). Vanlige spørsmål fungerer fortsatt.';
+      setAIStatus('● Online nå');
+    }
+  }
+
+  async function askLocalAI(msg) {
+    chatHistory.push({ role: 'user', content: msg });
+    const div = appendChatMsg('…', 'bot');
+    try {
+      const stream = await aiEngine.chat.completions.create({
+        messages: [{ role: 'system', content: aiSystemPrompt }, ...chatHistory.slice(-8)],
+        temperature: 0.3,
+        max_tokens: 250,
+        stream: true
+      });
+      let answer = '';
+      for await (const chunk of stream) {
+        answer += chunk.choices[0]?.delta?.content || '';
+        // Small models sometimes invent links; never show them
+        answer = answer.replace(/\b(https?:\/\/|www\.)\S+/gi, '').replace(/[ \t]{2,}/g, ' ');
+        div.textContent = answer || '…';
+        div.parentElement.scrollTop = div.parentElement.scrollHeight;
+      }
+      chatHistory.push({ role: 'assistant', content: answer });
+    } catch (err) {
+      console.error('Local AI reply failed', err);
+      chatHistory.pop();
+      div.textContent = 'Beklager, AI-en fikk en feil. Prøv igjen, eller kontakt oss på samikjan1991@gmail.com';
+    }
+  }
+
+  // Visitors who activated AI before get it loaded again automatically (the model is cached by the browser).
+  document.getElementById('aiSizeHint').textContent = aiDownloadHint;
+  if (aiStorage()) activateLocalAI();
 
   // ===== UPDATE ESC + MODAL CLOSE LISTS =====
 
